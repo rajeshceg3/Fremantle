@@ -1,0 +1,205 @@
+:root {
+  --sandstone: #c9b79c;
+  --harbor-blue: #5f7d8a;
+  --salt-white: #f2f2ee;
+  --rusted-iron: #7a4e2d;
+  --dusk-indigo: #2e3a4f;
+  --depth: 0;
+  --wind-x: 0px;
+  --drift-x: 0px;
+  --luma: 1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--salt-white);
+  background: #111;
+  overflow-x: hidden;
+}
+
+#experience {
+  position: relative;
+  width: 100%;
+  min-height: 620vh;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sandstone) 35%, var(--salt-white)) 0%,
+    color-mix(in srgb, var(--harbor-blue) 38%, var(--sandstone)) 45%,
+    color-mix(in srgb, var(--dusk-indigo) 72%, var(--harbor-blue)) 100%
+  );
+  filter: brightness(var(--luma));
+  transition: filter 1.4s ease-out, background 1.6s ease-in-out;
+}
+
+.sky-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background: radial-gradient(circle at 45% 20%, rgba(242, 242, 238, 0.28), transparent 50%);
+  transition: transform 1.8s ease-out;
+  transform: translateX(calc(var(--wind-x) * 0.4));
+}
+
+.horizon {
+  position: fixed;
+  top: 48vh;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(242, 242, 238, 0.45);
+  opacity: 0;
+  transform: scaleX(0.94);
+  transition: opacity 2.2s ease-out, transform 1.8s ease-out;
+}
+
+.horizon.revealed {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.layer-foreground {
+  transform: translateX(calc(var(--drift-x) * 0.2));
+  transition: transform 1.2s ease-out;
+}
+
+.layer-midground {
+  transform: translateX(calc(var(--drift-x) * 0.1));
+  transition: transform 1.6s ease-out;
+}
+
+.layer-background {
+  transform: translateX(calc(var(--drift-x) * 0.05));
+  transition: transform 1.8s ease-out;
+}
+
+.rope {
+  position: absolute;
+  bottom: 22vh;
+  width: 26vw;
+  height: 44px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(30, 30, 30, 0.06), rgba(30, 30, 30, 0.24));
+}
+
+.rope-a {
+  left: -7vw;
+}
+
+.rope-b {
+  right: -8vw;
+}
+
+.water-shimmer {
+  position: absolute;
+  top: 52vh;
+  left: 12%;
+  width: 76%;
+  height: 21vh;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(242, 242, 238, 0.06), rgba(242, 242, 238, 0.22), rgba(95, 125, 138, 0.12));
+  opacity: 0.26;
+  transition: opacity 1s ease, transform 1.4s ease-out;
+}
+
+.microcopy {
+  position: fixed;
+  top: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  font-size: clamp(0.72rem, 1.9vw, 0.95rem);
+  color: rgba(242, 242, 238, 0.8);
+  transition: opacity 0.9s ease-in-out;
+}
+
+.microcopy.visible {
+  opacity: 1;
+}
+
+.spaces {
+  position: relative;
+  display: grid;
+  gap: 52vh;
+  padding: 74vh min(9vw, 120px) 14vh;
+}
+
+.space {
+  max-width: 36ch;
+  padding: 1.4rem 1.5rem;
+  border-radius: 1.5rem;
+  background: rgba(242, 242, 238, 0.06);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(3px);
+  transition: background 900ms ease-out, transform 1000ms ease-out;
+}
+
+.space h1,
+.space h2 {
+  margin: 0 0 0.55rem;
+  font-weight: 300;
+  font-size: clamp(1.1rem, 2.5vw, 1.55rem);
+}
+
+.space p {
+  margin: 0;
+  line-height: 1.8;
+  font-size: clamp(0.82rem, 1.8vw, 0.95rem);
+  color: rgba(242, 242, 238, 0.88);
+}
+
+.whisper-card {
+  margin-top: 0.95rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1.2rem;
+  background: rgba(242, 242, 238, 0.15);
+  color: color-mix(in srgb, var(--dusk-indigo) 42%, #fff);
+  line-height: 1.8;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 900ms ease-in-out, opacity 900ms ease-in-out;
+}
+
+.whisper-trigger.open .whisper-card {
+  max-height: 180px;
+  opacity: 1;
+}
+
+.final-line {
+  position: fixed;
+  inset: auto 0 14vh;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+  font-size: clamp(0.84rem, 2vw, 1.1rem);
+}
+
+.final-line.visible {
+  opacity: 0.95;
+}
+
+@media (max-width: 760px) {
+  .spaces {
+    padding-inline: 6vw;
+  }
+
+  .space {
+    max-width: 100%;
+  }
+}
