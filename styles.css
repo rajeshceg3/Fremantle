@@ -37,7 +37,7 @@ body {
     color-mix(in srgb, var(--dusk-indigo) 72%, var(--harbor-blue)) 100%
   );
   filter: brightness(var(--luma));
-  transition: filter 1.4s ease-out, background 1.6s ease-in-out;
+  transition: filter 1.6s ease-out, background 1.8s ease-in-out;
 }
 
 .sky-glow {
@@ -114,7 +114,7 @@ body {
   border-radius: 999px;
   background: linear-gradient(120deg, rgba(242, 242, 238, 0.06), rgba(242, 242, 238, 0.22), rgba(95, 125, 138, 0.12));
   opacity: 0.26;
-  transition: opacity 1s ease, transform 1.4s ease-out;
+  transition: opacity 1.3s ease, transform 1.6s ease-out;
 }
 
 .microcopy {
@@ -143,10 +143,10 @@ body {
   max-width: 36ch;
   padding: 1.4rem 1.5rem;
   border-radius: 1.5rem;
-  background: rgba(242, 242, 238, 0.06);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+  background: rgba(242, 242, 238, 0.045);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.13);
   backdrop-filter: blur(3px);
-  transition: background 900ms ease-out, transform 1000ms ease-out;
+  transition: background 1200ms ease-out, transform 1200ms ease-out;
 }
 
 .space h1,
@@ -186,7 +186,7 @@ body {
   inset: auto 0 14vh;
   text-align: center;
   opacity: 0;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.7s ease;
   font-size: clamp(0.84rem, 2vw, 1.1rem);
 }
 
@@ -201,5 +201,14 @@ body {
 
   .space {
     max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }
