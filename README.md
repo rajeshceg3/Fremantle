@@ -10,6 +10,10 @@ python3 -m http.server 4173
 
 Open `http://localhost:4173`.
 
+For manual atmosphere QA on real devices, append `?qa=1` to enable a small diagnostics panel:
+
+`http://localhost:4173/?qa=1`
+
 
 ## Validate experience contract
 

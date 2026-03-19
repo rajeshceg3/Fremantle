@@ -195,6 +195,41 @@ body {
   opacity: 0.95;
 }
 
+.qa-panel {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 20;
+  width: min(92vw, 320px);
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.9rem;
+  background: rgba(24, 29, 36, 0.82);
+  border: 1px solid rgba(242, 242, 238, 0.2);
+  color: rgba(242, 242, 238, 0.9);
+  font-size: 0.74rem;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+}
+
+.qa-panel h3 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.qa-panel p {
+  margin: 0.35rem 0 0.55rem;
+  color: rgba(242, 242, 238, 0.78);
+}
+
+.qa-lines {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.18rem;
+}
+
 @media (max-width: 760px) {
   #experience {
     min-height: 680vh;

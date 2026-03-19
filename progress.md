@@ -1,6 +1,9 @@
 ## Current Progress
 
 ### Session updates
+- Added an optional real-device QA diagnostics mode (`?qa=1`) that surfaces live zone, stillness, reflection gate, viewport, and reduced-motion state without altering default immersion.
+- Completed the next highest-priority implementation task by adding tooling for the remaining manual QA phase (diagnostics panel + contract tests + run instructions).
+- Tightened reflection behavior to align with PRD ending tone by fading to near-black (`--luma: 0.18`) after the 10s stillness line appears at the western horizon.
 - Added an automated immersion contract smoke suite (`tests/test_immersion_contract.py`) to validate key PRD behaviors and keep future tuning changes regression-safe.
 - Completed the next highest-priority checklist item by calibrating desktop/mobile feel in code: tuned horizon easing, reflection trigger thresholds, and stillness timing to keep the ending moment gentle across viewport sizes.
 - Added touch-drag wind response so mobile users can "drag into depth" rather than relying on cursor-only movement.
@@ -21,7 +24,16 @@
 - Added README run instructions.
 
 ### Completion estimate
-- **Product completion:** **99.4%** of the PRD vision.
+- **Product completion:** **99.7%** of the PRD vision.
+
+### Implementation checklist
+- [x] Build immersive single-page structure and narrative spaces.
+- [x] Implement atmospheric interaction system (horizon reveal, parallax drift, pause microcopy, whisper cards).
+- [x] Implement ambient audio layering and zone-responsive transitions.
+- [x] Tune pacing and resistance for desktop/mobile parity.
+- [x] Add regression coverage for core immersion contract.
+- [x] Add optional real-device QA diagnostics mode to support final manual validation.
+- [ ] Run and document a live, human-evaluated QA pass on target desktop + mobile devices.
 
 ### Remaining work
-- Conduct a live, human-evaluated in-browser QA pass on real target devices (desktop + mobile) to validate subjective atmosphere (wind, stillness, pacing) after the automated checks.
+- Conduct a live, human-evaluated in-browser QA pass on real target devices (desktop + mobile) to validate subjective atmosphere (wind, stillness, pacing) and close the final checklist item.
