@@ -7,7 +7,21 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#spaces">Skip to story spaces</a>
     <main id="experience" aria-label="Immersive Fremantle experience">
+      <section class="experience-hud" aria-label="Experience controls and context">
+        <p class="hud-kicker">Fremantle Presence Guide</p>
+        <div class="hud-row">
+          <p class="hud-status" id="hudStatus">Arrival • 0% explored</p>
+          <button class="hud-button" id="contrastToggle" type="button" aria-pressed="false">
+            High contrast
+          </button>
+        </div>
+        <p class="hud-detail" id="hudDetail">
+          Move slowly: each stop reveals where you are, what surrounds you, and how the harbor shifts.
+        </p>
+      </section>
+
       <div class="sky-glow" aria-hidden="true"></div>
       <div class="horizon" id="horizon" aria-hidden="true"></div>
 
@@ -28,10 +42,12 @@
         <article class="space" data-space="arrival">
           <h1>Salt Before Structure</h1>
           <p>The harbor arrives before words.</p>
+          <p class="space-meta">Feel: cool air · low tide mineral scent · ropes shifting against hulls.</p>
         </article>
         <article class="space whisper-trigger" data-space="harbor" tabindex="0" aria-label="Harbor Edge">
           <h2>Harbor Edge</h2>
           <p>Rigging taps. Wind grazes steel.</p>
+          <p class="space-meta">Look for: gull arcs, blue-gray wake lines, ferry bells layered over wind.</p>
           <div class="whisper-card">
             Fishing boats and ferries share this working waterline. Fremantle Harbor has linked Western Australia to Indian Ocean routes since the late 19th century.
           </div>
@@ -39,6 +55,7 @@
         <article class="space whisper-trigger" data-space="historic" tabindex="0" aria-label="Historic Core">
           <h2>Historic Core</h2>
           <p>Sandstone holds cooler shadows.</p>
+          <p class="space-meta">Texture: weathered limestone, softened echoes, narrow shade corridors.</p>
           <div class="whisper-card">
             Nearby limestone and sandstone architecture reflects convict-era construction. Heavier materials mute sound and slow the feel of movement.
           </div>
@@ -46,6 +63,7 @@
         <article class="space whisper-trigger" data-space="market" tabindex="0" aria-label="Market Pulse">
           <h2>Market Pulse</h2>
           <p>Murmur warms the lane.</p>
+          <p class="space-meta">Color: citrus stalls, ochre brick, hand-painted signs under warm canopies.</p>
           <div class="whisper-card">
             Fremantle Markets have been operating in the heritage hall precinct since 1897, blending produce, makers, and local voices in a low, constant hum.
           </div>
@@ -53,6 +71,7 @@
         <article class="space whisper-trigger" data-space="beach" tabindex="0" aria-label="Bathers Beach">
           <h2>Bathers Beach</h2>
           <p>Amber dusk over broken foam.</p>
+          <p class="space-meta">Palette: amber horizon, indigo water, rust-red sea wall at sundown.</p>
           <div class="whisper-card">
             Bathers Beach sits against the old harbor edge, where evening light lowers quickly and the sea tone deepens toward indigo.
           </div>
@@ -64,6 +83,7 @@
       </div>
 
       <div class="final-line" id="finalLine">You've been here before.</div>
+      <p class="sr-only" id="narrativeAnnouncer" aria-live="polite"></p>
     </main>
 
     <script src="app.js"></script>

@@ -4,6 +4,10 @@ const microcopy = document.getElementById('microcopy');
 const finalLine = document.getElementById('finalLine');
 const shimmer = document.getElementById('waterShimmer');
 const whisperTriggers = Array.from(document.querySelectorAll('.whisper-trigger'));
+const hudStatus = document.getElementById('hudStatus');
+const hudDetail = document.getElementById('hudDetail');
+const contrastToggle = document.getElementById('contrastToggle');
+const narrativeAnnouncer = document.getElementById('narrativeAnnouncer');
 const qaMode = new URLSearchParams(window.location.search).get('qa') === '1';
 
 let lastInteraction = Date.now();
@@ -17,6 +21,7 @@ const isSmallViewport = window.matchMedia('(max-width: 760px)').matches;
 let touchDragX = null;
 let qaPanel;
 let qaLines;
+let lastAnnouncedZone = '';
 
 const colorKeyframes = [
   {
@@ -239,6 +244,18 @@ function updateDepth() {
   const reflectionThreshold = isSmallViewport ? 0.94 : 0.92;
   const reflectionStillness = isSmallViewport ? 12000 : 10000;
   const nearReflection = progress > reflectionThreshold;
+  const zone = zoneLabel(progress);
+
+  if (hudStatus) {
+    hudStatus.textContent = `${zone} • ${(progress * 100).toFixed(0)}% explored`;
+  }
+  if (hudDetail) {
+    hudDetail.textContent = detailByZone(zone);
+  }
+  if (narrativeAnnouncer && zone !== lastAnnouncedZone) {
+    narrativeAnnouncer.textContent = `Now entering ${zone}.`;
+    lastAnnouncedZone = zone;
+  }
 
   if (nearReflection) {
     document.documentElement.style.setProperty('--luma', '0.97');
@@ -262,6 +279,23 @@ function updateDepth() {
       reflectionThreshold,
       reflectionStillness
     });
+  }
+}
+
+function detailByZone(zone) {
+  switch (zone) {
+    case 'Harbor Edge':
+      return 'You are at the working shoreline: listen for rigging taps and ferry movement.';
+    case 'Historic Core':
+      return 'Stone and shade soften sound here; movement feels slower and denser.';
+    case 'Market Pulse':
+      return 'Color and voices rise together, blending produce stalls with maker workshops.';
+    case 'Bathers Beach':
+      return 'Evening tones shift from amber into indigo as the waterline darkens.';
+    case 'Western Horizon':
+      return 'Hold still to let the final reflection sequence reveal itself.';
+    default:
+      return 'Move slowly: each stop reveals where you are, what surrounds you, and how the harbor shifts.';
   }
 }
 
@@ -417,17 +451,27 @@ window.addEventListener('touchend', () => {
 });
 
 whisperTriggers.forEach((trigger) => {
+  trigger.setAttribute('aria-expanded', 'false');
   trigger.addEventListener('click', () => {
     trigger.classList.toggle('open');
+    trigger.setAttribute('aria-expanded', String(trigger.classList.contains('open')));
   });
 
   trigger.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       trigger.classList.toggle('open');
+      trigger.setAttribute('aria-expanded', String(trigger.classList.contains('open')));
     }
   });
 });
+
+if (contrastToggle) {
+  contrastToggle.addEventListener('click', () => {
+    const isActive = document.body.classList.toggle('high-contrast');
+    contrastToggle.setAttribute('aria-pressed', String(isActive));
+  });
+}
 
 updateDepth();
 if (qaMode) {

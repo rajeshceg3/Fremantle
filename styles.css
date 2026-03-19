@@ -8,6 +8,9 @@
   --wind-x: 0px;
   --drift-x: 0px;
   --luma: 1;
+  --surface-veil: rgba(9, 15, 24, 0.42);
+  --surface-border: rgba(242, 242, 238, 0.24);
+  --surface-text: rgba(248, 250, 255, 0.97);
 }
 
 * {
@@ -26,6 +29,23 @@ body {
   overflow-x: hidden;
 }
 
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -4rem;
+  z-index: 40;
+  padding: 0.7rem 0.95rem;
+  border-radius: 0.7rem;
+  background: #101723;
+  color: #fff;
+  text-decoration: none;
+  transition: top 200ms ease;
+}
+
+.skip-link:focus-visible {
+  top: 1rem;
+}
+
 #experience {
   position: relative;
   width: 100%;
@@ -39,6 +59,65 @@ body {
   );
   filter: brightness(var(--luma));
   transition: filter 1.6s ease-out, background 1.8s ease-in-out;
+}
+
+.experience-hud {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: min(92vw, 820px);
+  padding: 0.95rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--surface-border);
+  background: rgba(10, 16, 24, 0.72);
+  backdrop-filter: blur(8px);
+  color: var(--surface-text);
+}
+
+.hud-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: rgba(242, 242, 238, 0.8);
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: 0.38rem;
+}
+
+.hud-status {
+  margin: 0;
+  font-size: clamp(0.86rem, 2vw, 1rem);
+}
+
+.hud-detail {
+  margin: 0.45rem 0 0;
+  color: rgba(244, 247, 255, 0.92);
+  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.hud-button {
+  border: 1px solid rgba(242, 242, 238, 0.5);
+  border-radius: 999px;
+  background: rgba(242, 242, 238, 0.12);
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.hud-button:hover,
+.hud-button:focus-visible {
+  background: rgba(242, 242, 238, 0.2);
 }
 
 .sky-glow {
@@ -137,16 +216,17 @@ body {
   position: relative;
   display: grid;
   gap: 52vh;
-  padding: 74vh min(9vw, 120px) 14vh;
+  padding: 78vh min(9vw, 120px) 14vh;
 }
 
 .space {
   max-width: 36ch;
   padding: 1.4rem 1.5rem;
   border-radius: 1.5rem;
-  background: rgba(242, 242, 238, 0.045);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.13);
-  backdrop-filter: blur(3px);
+  background: var(--surface-veil);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(6px);
   transition: background 1200ms ease-out, transform 1200ms ease-out;
 }
 
@@ -161,20 +241,47 @@ body {
   margin: 0;
   line-height: 1.8;
   font-size: clamp(0.82rem, 1.8vw, 0.95rem);
-  color: rgba(242, 242, 238, 0.88);
+  color: rgba(250, 252, 255, 0.98);
+}
+
+.space-meta {
+  margin-top: 0.55rem !important;
+  font-size: clamp(0.75rem, 1.7vw, 0.84rem) !important;
+  color: rgba(233, 240, 250, 0.9) !important;
+  letter-spacing: 0.03em;
 }
 
 .whisper-card {
   margin-top: 0.95rem;
   padding: 1rem 1.15rem;
   border-radius: 1.2rem;
-  background: rgba(242, 242, 238, 0.15);
-  color: color-mix(in srgb, var(--dusk-indigo) 42%, #fff);
+  background: rgba(248, 250, 255, 0.92);
+  color: #132033;
   line-height: 1.8;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
   transition: max-height 900ms ease-in-out, opacity 900ms ease-in-out;
+}
+
+.whisper-trigger:focus-visible,
+.hud-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.high-contrast {
+  --surface-veil: rgba(0, 0, 0, 0.76);
+  --surface-border: rgba(255, 255, 255, 0.88);
+  --surface-text: rgba(255, 255, 255, 1);
+}
+
+.high-contrast .experience-hud {
+  background: rgba(0, 0, 0, 0.88);
+}
+
+.high-contrast .space {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 20px 32px rgba(0, 0, 0, 0.42);
 }
 
 .whisper-trigger.open .whisper-card {
@@ -193,6 +300,17 @@ body {
 
 .final-line.visible {
   opacity: 0.95;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 .qa-panel {
@@ -242,6 +360,11 @@ body {
 
   .space {
     max-width: 100%;
+  }
+
+  .experience-hud {
+    top: 0.5rem;
+    width: calc(100vw - 1rem);
   }
 }
 
