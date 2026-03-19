@@ -1,6 +1,7 @@
 ## Current Progress
 
 ### Session updates
+- Added an automated immersion contract smoke suite (`tests/test_immersion_contract.py`) to validate key PRD behaviors and keep future tuning changes regression-safe.
 - Completed the next highest-priority checklist item by calibrating desktop/mobile feel in code: tuned horizon easing, reflection trigger thresholds, and stillness timing to keep the ending moment gentle across viewport sizes.
 - Added touch-drag wind response so mobile users can "drag into depth" rather than relying on cursor-only movement.
 - Added reduced-motion guarding for the pause watcher to preserve stillness behavior without forced motion loops.
@@ -20,7 +21,7 @@
 - Added README run instructions.
 
 ### Completion estimate
-- **Product completion:** **99%** of the PRD vision.
+- **Product completion:** **99.4%** of the PRD vision.
 
 ### Remaining work
-- Conduct a live, human-evaluated in-browser QA pass on real target devices (desktop + mobile) to validate the new calibration values against subjective feel.
+- Conduct a live, human-evaluated in-browser QA pass on real target devices (desktop + mobile) to validate subjective atmosphere (wind, stillness, pacing) after the automated checks.
