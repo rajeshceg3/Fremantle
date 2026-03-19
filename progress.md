@@ -1,6 +1,8 @@
 ## Current Progress
 
 ### Session updates
+- Improved atmospheric audio layering by zone (harbor rigging, historic echo, market murmur, and beach-forward waves) with smooth gain transitions.
+- Replaced threshold-based background swaps with continuous gradient interpolation for softer space-to-space transitions.
 - Bootstrapped the immersive experience as a static web app (`index.html`, `styles.css`, `app.js`).
 - Implemented 6.8s horizon reveal and ambient arrival state with minimal UI noise.
 - Added layered harbor parallax behavior tied to scroll depth and cursor-driven wind drift.
@@ -12,10 +14,8 @@
 - Added README run instructions.
 
 ### Completion estimate
-- **Product completion:** **82%** of the PRD vision.
+- **Product completion:** **90%** of the PRD vision.
 
 ### Remaining work
-- Improve atmospheric audio layering fidelity per zone (e.g., separate rigging/market/echo layers with smoother transitions).
-- Refine section transitions to feel more continuous and less threshold-based.
 - Add subtle scroll-resistance effect near horizon for stronger tactile alignment with PRD.
 - Expand final validation tuning pass for pacing, softness, and perceived stillness.
