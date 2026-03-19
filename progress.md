@@ -1,6 +1,10 @@
 ## Current Progress
 
 ### Session updates
+- Completed the next highest-priority checklist item by calibrating desktop/mobile feel in code: tuned horizon easing, reflection trigger thresholds, and stillness timing to keep the ending moment gentle across viewport sizes.
+- Added touch-drag wind response so mobile users can "drag into depth" rather than relying on cursor-only movement.
+- Added reduced-motion guarding for the pause watcher to preserve stillness behavior without forced motion loops.
+- Adjusted mobile layout pacing (`min-height` and section gaps) to keep narrative spacing and reflection timing consistent on smaller screens.
 - Added horizon-proximate scroll resistance to create a gentler, pressure-like approach to the western edge.
 - Ran a final immersion tuning pass to soften pacing (longer transitions, quieter card presence, calmer reflection fade) and improve stillness.
 - Improved atmospheric audio layering by zone (harbor rigging, historic echo, market murmur, and beach-forward waves) with smooth gain transitions.
@@ -16,7 +20,7 @@
 - Added README run instructions.
 
 ### Completion estimate
-- **Product completion:** **97%** of the PRD vision.
+- **Product completion:** **99%** of the PRD vision.
 
 ### Remaining work
-- Conduct an in-browser experiential QA pass on target devices (desktop + mobile) to calibrate feel, especially near the final reflection zone.
+- Conduct a live, human-evaluated in-browser QA pass on real target devices (desktop + mobile) to validate the new calibration values against subjective feel.

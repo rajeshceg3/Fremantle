@@ -11,6 +11,9 @@ let audioCtx;
 let audioStarted = false;
 let audioLayers;
 let resistingScroll = false;
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isSmallViewport = window.matchMedia('(max-width: 760px)').matches;
+let touchDragX = null;
 
 const colorKeyframes = [
   {
@@ -219,24 +222,29 @@ function startAudio() {
 function updateDepth() {
   const maxScroll = document.body.scrollHeight - window.innerHeight;
   const progress = Math.min(window.scrollY / Math.max(maxScroll, 1), 1);
-  const horizonEase = 1 - smoothstep(0.84, 1, progress) * 0.35;
+  const horizonStart = isSmallViewport ? 0.86 : 0.84;
+  const horizonEase = 1 - smoothstep(horizonStart, 1, progress) * (isSmallViewport ? 0.3 : 0.35);
   const visualProgress = clamp(progress * horizonEase, 0, 1);
+  const driftDistance = isSmallViewport ? -40 : -56;
 
   document.documentElement.style.setProperty('--depth', visualProgress.toFixed(3));
-  document.documentElement.style.setProperty('--drift-x', `${visualProgress * -56}px`);
+  document.documentElement.style.setProperty('--drift-x', `${visualProgress * driftDistance}px`);
   shimmer.style.opacity = (0.24 + smoothstep(0.22, 0.66, visualProgress) * 0.13).toFixed(3);
   experience.style.background = gradientFor(visualProgress);
   updateAudioByProgress(visualProgress);
 
-  if (progress > 0.92) {
+  const reflectionThreshold = isSmallViewport ? 0.94 : 0.92;
+  const reflectionStillness = isSmallViewport ? 12000 : 10000;
+
+  if (progress > reflectionThreshold) {
     document.documentElement.style.setProperty('--luma', '0.97');
     clearTimeout(reflectionTimer);
     reflectionTimer = setTimeout(() => {
-      if (Date.now() - lastInteraction > 10000) {
+      if (Date.now() - lastInteraction > reflectionStillness) {
         finalLine.classList.add('visible');
         document.documentElement.style.setProperty('--luma', '0.9');
       }
-    }, 10020);
+    }, reflectionStillness + 20);
   } else {
     finalLine.classList.remove('visible');
     document.documentElement.style.setProperty('--luma', '1');
@@ -278,6 +286,10 @@ function noteActivity() {
 }
 
 function pauseWatcher() {
+  if (prefersReducedMotion) {
+    return;
+  }
+
   if (Date.now() - lastInteraction > 2000) {
     microcopy.classList.add('visible');
   }
@@ -312,6 +324,29 @@ window.addEventListener('pointermove', (event) => {
 window.addEventListener('touchstart', () => {
   startAudio();
   noteActivity();
+});
+
+window.addEventListener(
+  'touchmove',
+  (event) => {
+    if (!event.touches.length) {
+      return;
+    }
+
+    const point = event.touches[0];
+    if (touchDragX === null) {
+      touchDragX = point.clientX;
+    }
+
+    const delta = clamp(point.clientX - touchDragX, -42, 42);
+    document.documentElement.style.setProperty('--wind-x', `${(delta / 42) * 14}px`);
+    noteActivity();
+  },
+  { passive: true }
+);
+
+window.addEventListener('touchend', () => {
+  touchDragX = null;
 });
 
 whisperTriggers.forEach((trigger) => {

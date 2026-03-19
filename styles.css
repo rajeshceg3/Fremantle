@@ -30,6 +30,7 @@ body {
   position: relative;
   width: 100%;
   min-height: 620vh;
+  touch-action: pan-y;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--sandstone) 35%, var(--salt-white)) 0%,
@@ -195,7 +196,12 @@ body {
 }
 
 @media (max-width: 760px) {
+  #experience {
+    min-height: 680vh;
+  }
+
   .spaces {
+    gap: 56vh;
     padding-inline: 6vw;
   }
 
