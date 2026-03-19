@@ -18,6 +18,7 @@ class ImmersionContractTests(unittest.TestCase):
     def test_reflection_message_delay(self):
         self.assertIn("const reflectionStillness = isSmallViewport ? 12000 : 10000;", APP_JS)
         self.assertIn("You've been here before.", INDEX_HTML)
+        self.assertIn("document.documentElement.style.setProperty('--luma', '0.18');", APP_JS)
 
     def test_contains_required_spaces(self):
         for label in ["Harbor Edge", "Historic Core", "Market Pulse", "Bathers Beach", "Western Horizon"]:
@@ -38,6 +39,11 @@ class ImmersionContractTests(unittest.TestCase):
         for card in cards:
             words = [w for w in re.split(r"\s+", card.strip()) if w]
             self.assertLessEqual(len(words), 60, f"Whisper card exceeds 60 words: {len(words)}")
+
+    def test_optional_qa_mode_exists_for_device_validation(self):
+        self.assertIn("const qaMode = new URLSearchParams(window.location.search).get('qa') === '1';", APP_JS)
+        self.assertIn("function setupQaPanel()", APP_JS)
+        self.assertIn(".qa-panel", STYLES_CSS)
 
 
 if __name__ == '__main__':

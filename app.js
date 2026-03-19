@@ -4,6 +4,7 @@ const microcopy = document.getElementById('microcopy');
 const finalLine = document.getElementById('finalLine');
 const shimmer = document.getElementById('waterShimmer');
 const whisperTriggers = Array.from(document.querySelectorAll('.whisper-trigger'));
+const qaMode = new URLSearchParams(window.location.search).get('qa') === '1';
 
 let lastInteraction = Date.now();
 let reflectionTimer;
@@ -14,6 +15,8 @@ let resistingScroll = false;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isSmallViewport = window.matchMedia('(max-width: 760px)').matches;
 let touchDragX = null;
+let qaPanel;
+let qaLines;
 
 const colorKeyframes = [
   {
@@ -235,19 +238,30 @@ function updateDepth() {
 
   const reflectionThreshold = isSmallViewport ? 0.94 : 0.92;
   const reflectionStillness = isSmallViewport ? 12000 : 10000;
+  const nearReflection = progress > reflectionThreshold;
 
-  if (progress > reflectionThreshold) {
+  if (nearReflection) {
     document.documentElement.style.setProperty('--luma', '0.97');
     clearTimeout(reflectionTimer);
     reflectionTimer = setTimeout(() => {
       if (Date.now() - lastInteraction > reflectionStillness) {
         finalLine.classList.add('visible');
-        document.documentElement.style.setProperty('--luma', '0.9');
+        document.documentElement.style.setProperty('--luma', '0.18');
       }
     }, reflectionStillness + 20);
   } else {
     finalLine.classList.remove('visible');
     document.documentElement.style.setProperty('--luma', '1');
+  }
+
+  if (qaMode) {
+    updateQaPanel({
+      progress,
+      visualProgress,
+      nearReflection,
+      reflectionThreshold,
+      reflectionStillness
+    });
   }
 }
 
@@ -283,6 +297,59 @@ function noteActivity() {
   if (audioCtx?.state === 'suspended') {
     audioCtx.resume();
   }
+}
+
+function zoneLabel(progress) {
+  if (progress < 0.3) return 'Arrival';
+  if (progress < 0.52) return 'Harbor Edge';
+  if (progress < 0.68) return 'Historic Core';
+  if (progress < 0.84) return 'Market Pulse';
+  if (progress < 0.95) return 'Bathers Beach';
+  return 'Western Horizon';
+}
+
+function setupQaPanel() {
+  qaPanel = document.createElement('aside');
+  qaPanel.className = 'qa-panel';
+  qaPanel.setAttribute('aria-live', 'polite');
+  qaPanel.innerHTML = `
+    <h3>QA Mode</h3>
+    <p>Use real devices for atmosphere checks.</p>
+    <ul class="qa-lines">
+      <li data-qa="zone"></li>
+      <li data-qa="progress"></li>
+      <li data-qa="visual"></li>
+      <li data-qa="stillness"></li>
+      <li data-qa="reflection"></li>
+      <li data-qa="viewport"></li>
+      <li data-qa="motion"></li>
+    </ul>
+  `;
+  document.body.appendChild(qaPanel);
+  qaLines = {
+    zone: qaPanel.querySelector('[data-qa="zone"]'),
+    progress: qaPanel.querySelector('[data-qa="progress"]'),
+    visual: qaPanel.querySelector('[data-qa="visual"]'),
+    stillness: qaPanel.querySelector('[data-qa="stillness"]'),
+    reflection: qaPanel.querySelector('[data-qa="reflection"]'),
+    viewport: qaPanel.querySelector('[data-qa="viewport"]'),
+    motion: qaPanel.querySelector('[data-qa="motion"]')
+  };
+}
+
+function updateQaPanel({ progress, visualProgress, nearReflection, reflectionThreshold, reflectionStillness }) {
+  if (!qaLines) {
+    return;
+  }
+
+  const stillForMs = Date.now() - lastInteraction;
+  qaLines.zone.textContent = `Zone: ${zoneLabel(progress)}`;
+  qaLines.progress.textContent = `Scroll progress: ${(progress * 100).toFixed(1)}%`;
+  qaLines.visual.textContent = `Visual depth: ${(visualProgress * 100).toFixed(1)}%`;
+  qaLines.stillness.textContent = `Stillness: ${(stillForMs / 1000).toFixed(1)}s`;
+  qaLines.reflection.textContent = `Reflection gate: ${nearReflection ? 'armed' : 'idle'} @ ${(reflectionThreshold * 100).toFixed(0)}% / ${(reflectionStillness / 1000).toFixed(0)}s`;
+  qaLines.viewport.textContent = `Viewport: ${isSmallViewport ? 'mobile' : 'desktop'}`;
+  qaLines.motion.textContent = `Reduced motion: ${prefersReducedMotion ? 'on' : 'off'}`;
 }
 
 function pauseWatcher() {
@@ -363,4 +430,8 @@ whisperTriggers.forEach((trigger) => {
 });
 
 updateDepth();
+if (qaMode) {
+  setupQaPanel();
+  updateDepth();
+}
 pauseWatcher();
