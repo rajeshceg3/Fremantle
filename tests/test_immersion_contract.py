@@ -1,0 +1,44 @@
+import re
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+APP_JS = (ROOT / 'app.js').read_text(encoding='utf-8')
+INDEX_HTML = (ROOT / 'index.html').read_text(encoding='utf-8')
+STYLES_CSS = (ROOT / 'styles.css').read_text(encoding='utf-8')
+
+
+class ImmersionContractTests(unittest.TestCase):
+    def test_arrival_horizon_reveal_timing(self):
+        self.assertRegex(APP_JS, r"setTimeout\(\(\) => horizon\.classList\.add\('revealed'\),\s*6800\)")
+
+    def test_pause_detection_timing(self):
+        self.assertIn("Date.now() - lastInteraction > 2000", APP_JS)
+
+    def test_reflection_message_delay(self):
+        self.assertIn("const reflectionStillness = isSmallViewport ? 12000 : 10000;", APP_JS)
+        self.assertIn("You've been here before.", INDEX_HTML)
+
+    def test_contains_required_spaces(self):
+        for label in ["Harbor Edge", "Historic Core", "Market Pulse", "Bathers Beach", "Western Horizon"]:
+            self.assertIn(label, INDEX_HTML)
+
+    def test_parallax_and_wind_variables_exist(self):
+        self.assertIn("--drift-x", STYLES_CSS)
+        self.assertIn("--wind-x", STYLES_CSS)
+        self.assertIn("document.documentElement.style.setProperty('--wind-x'", APP_JS)
+
+    def test_horizon_scroll_resistance(self):
+        self.assertRegex(APP_JS, r"progress < 0\.82")
+        self.assertRegex(APP_JS, r"smoothstep\(0\.82, 0\.99, progress\)")
+
+    def test_whisper_cards_have_length_budget(self):
+        cards = re.findall(r'<div class="whisper-card">\s*([^<]+)\s*</div>', INDEX_HTML)
+        self.assertGreaterEqual(len(cards), 4)
+        for card in cards:
+            words = [w for w in re.split(r"\s+", card.strip()) if w]
+            self.assertLessEqual(len(words), 60, f"Whisper card exceeds 60 words: {len(words)}")
+
+
+if __name__ == '__main__':
+    unittest.main()
