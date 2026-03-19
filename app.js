@@ -4,6 +4,7 @@ const microcopy = document.getElementById('microcopy');
 const finalLine = document.getElementById('finalLine');
 const shimmer = document.getElementById('waterShimmer');
 const whisperTriggers = Array.from(document.querySelectorAll('.whisper-trigger'));
+const spaceCards = Array.from(document.querySelectorAll('.space[data-space]'));
 const hudStatus = document.getElementById('hudStatus');
 const hudDetail = document.getElementById('hudDetail');
 const contrastToggle = document.getElementById('contrastToggle');
@@ -22,6 +23,19 @@ let touchDragX = null;
 let qaPanel;
 let qaLines;
 let lastAnnouncedZone = '';
+let currentZone = 'Arrival';
+let lastMicrocopyZone = '';
+let microcopyIndex = 0;
+let shimmerPulseTimer;
+
+const zoneWhispers = {
+  Arrival: ['Salt before streets.', 'Light arrives first.'],
+  'Harbor Edge': ['Rigging taps the wind.', 'Steel lines meet tide.'],
+  'Historic Core': ['Stone keeps the day cool.', 'History breathes in shade.'],
+  'Market Pulse': ['Warm voices drift together.', 'Color hums through lanes.'],
+  'Bathers Beach': ['Amber slips into indigo.', 'Foam gathers dusk light.'],
+  'Western Horizon': ['Hold still at the edge.', 'Evening settles in water.']
+};
 
 const colorKeyframes = [
   {
@@ -245,6 +259,7 @@ function updateDepth() {
   const reflectionStillness = isSmallViewport ? 12000 : 10000;
   const nearReflection = progress > reflectionThreshold;
   const zone = zoneLabel(progress);
+  currentZone = zone;
 
   if (hudStatus) {
     hudStatus.textContent = `${zone} • ${(progress * 100).toFixed(0)}% explored`;
@@ -254,6 +269,8 @@ function updateDepth() {
   }
   if (narrativeAnnouncer && zone !== lastAnnouncedZone) {
     narrativeAnnouncer.textContent = `Now entering ${zone}.`;
+    pulseShimmer();
+    updateCurrentSpace(zone);
     lastAnnouncedZone = zone;
   }
 
@@ -280,6 +297,47 @@ function updateDepth() {
       reflectionStillness
     });
   }
+}
+
+function updateCurrentSpace(zone) {
+  const zoneMap = {
+    Arrival: 'arrival',
+    'Harbor Edge': 'harbor',
+    'Historic Core': 'historic',
+    'Market Pulse': 'market',
+    'Bathers Beach': 'beach',
+    'Western Horizon': 'reflection'
+  };
+
+  const activeSpace = zoneMap[zone];
+  spaceCards.forEach((card) => {
+    card.classList.toggle('is-current', card.dataset.space === activeSpace);
+  });
+}
+
+function pulseShimmer() {
+  shimmer.classList.remove('pulse');
+  if (shimmerPulseTimer) {
+    clearTimeout(shimmerPulseTimer);
+  }
+  requestAnimationFrame(() => shimmer.classList.add('pulse'));
+  shimmerPulseTimer = setTimeout(() => shimmer.classList.remove('pulse'), 2000);
+}
+
+function revealZoneMicrocopy(force = false) {
+  if (prefersReducedMotion) {
+    return;
+  }
+
+  const lines = zoneWhispers[currentZone] || zoneWhispers.Arrival;
+  if (force || lastMicrocopyZone !== currentZone) {
+    microcopyIndex = 0;
+  } else {
+    microcopyIndex = (microcopyIndex + 1) % lines.length;
+  }
+  microcopy.textContent = lines[microcopyIndex];
+  lastMicrocopyZone = currentZone;
+  microcopy.classList.add('visible');
 }
 
 function detailByZone(zone) {
@@ -392,7 +450,7 @@ function pauseWatcher() {
   }
 
   if (Date.now() - lastInteraction > 2000) {
-    microcopy.classList.add('visible');
+    revealZoneMicrocopy();
   }
   requestAnimationFrame(pauseWatcher);
 }
@@ -453,15 +511,29 @@ window.addEventListener('touchend', () => {
 whisperTriggers.forEach((trigger) => {
   trigger.setAttribute('aria-expanded', 'false');
   trigger.addEventListener('click', () => {
-    trigger.classList.toggle('open');
-    trigger.setAttribute('aria-expanded', String(trigger.classList.contains('open')));
+    const shouldOpen = !trigger.classList.contains('open');
+    whisperTriggers.forEach((item) => {
+      item.classList.remove('open');
+      item.setAttribute('aria-expanded', 'false');
+    });
+    if (shouldOpen) {
+      trigger.classList.add('open');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
   });
 
   trigger.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      trigger.classList.toggle('open');
-      trigger.setAttribute('aria-expanded', String(trigger.classList.contains('open')));
+      const shouldOpen = !trigger.classList.contains('open');
+      whisperTriggers.forEach((item) => {
+        item.classList.remove('open');
+        item.setAttribute('aria-expanded', 'false');
+      });
+      if (shouldOpen) {
+        trigger.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
     }
   });
 });

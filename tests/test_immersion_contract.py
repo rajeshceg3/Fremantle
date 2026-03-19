@@ -45,6 +45,29 @@ class ImmersionContractTests(unittest.TestCase):
         self.assertIn("function setupQaPanel()", APP_JS)
         self.assertIn(".qa-panel", STYLES_CSS)
 
+    def test_zone_microcopy_is_contextual_and_brief(self):
+        self.assertIn("const zoneWhispers = {", APP_JS)
+        for phrase in [
+            "Salt before streets.",
+            "Rigging taps the wind.",
+            "Stone keeps the day cool.",
+            "Warm voices drift together.",
+            "Amber slips into indigo.",
+            "Hold still at the edge."
+        ]:
+            self.assertIn(phrase, APP_JS)
+
+    def test_single_whisper_card_focus_behavior(self):
+        self.assertIn("const shouldOpen = !trigger.classList.contains('open');", APP_JS)
+        self.assertIn("whisperTriggers.forEach((item) => {", APP_JS)
+        self.assertIn("item.classList.remove('open');", APP_JS)
+
+    def test_zone_presence_highlight_and_shimmer_pulse(self):
+        self.assertIn("function pulseShimmer()", APP_JS)
+        self.assertIn("updateCurrentSpace(zone);", APP_JS)
+        self.assertIn(".space.is-current", STYLES_CSS)
+        self.assertIn(".water-shimmer.pulse", STYLES_CSS)
+
 
 if __name__ == '__main__':
     unittest.main()
