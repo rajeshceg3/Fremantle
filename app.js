@@ -10,6 +10,7 @@ let reflectionTimer;
 let audioCtx;
 let audioStarted = false;
 let audioLayers;
+let resistingScroll = false;
 
 const colorKeyframes = [
   {
@@ -218,12 +219,14 @@ function startAudio() {
 function updateDepth() {
   const maxScroll = document.body.scrollHeight - window.innerHeight;
   const progress = Math.min(window.scrollY / Math.max(maxScroll, 1), 1);
+  const horizonEase = 1 - smoothstep(0.84, 1, progress) * 0.35;
+  const visualProgress = clamp(progress * horizonEase, 0, 1);
 
-  document.documentElement.style.setProperty('--depth', progress.toFixed(3));
-  document.documentElement.style.setProperty('--drift-x', `${progress * -56}px`);
-  shimmer.style.opacity = (0.24 + smoothstep(0.22, 0.66, progress) * 0.13).toFixed(3);
-  experience.style.background = gradientFor(progress);
-  updateAudioByProgress(progress);
+  document.documentElement.style.setProperty('--depth', visualProgress.toFixed(3));
+  document.documentElement.style.setProperty('--drift-x', `${visualProgress * -56}px`);
+  shimmer.style.opacity = (0.24 + smoothstep(0.22, 0.66, visualProgress) * 0.13).toFixed(3);
+  experience.style.background = gradientFor(visualProgress);
+  updateAudioByProgress(visualProgress);
 
   if (progress > 0.92) {
     document.documentElement.style.setProperty('--luma', '0.97');
@@ -238,6 +241,31 @@ function updateDepth() {
     finalLine.classList.remove('visible');
     document.documentElement.style.setProperty('--luma', '1');
   }
+}
+
+function applyHorizonResistance(deltaY) {
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
+  if (maxScroll <= 0) {
+    return false;
+  }
+
+  const progress = window.scrollY / maxScroll;
+  const headingTowardHorizon = deltaY > 0;
+  if (!headingTowardHorizon || progress < 0.82 || progress >= 0.995 || resistingScroll) {
+    return false;
+  }
+
+  const resistance = 1 - smoothstep(0.82, 0.99, progress) * 0.72;
+  const dampedDelta = deltaY * resistance;
+  resistingScroll = true;
+  window.scrollTo({
+    top: clamp(window.scrollY + dampedDelta, 0, maxScroll),
+    behavior: 'auto'
+  });
+  requestAnimationFrame(() => {
+    resistingScroll = false;
+  });
+  return true;
 }
 
 function noteActivity() {
@@ -261,6 +289,18 @@ window.addEventListener('scroll', () => {
   noteActivity();
   updateDepth();
 });
+
+window.addEventListener(
+  'wheel',
+  (event) => {
+    if (applyHorizonResistance(event.deltaY)) {
+      event.preventDefault();
+      noteActivity();
+      updateDepth();
+    }
+  },
+  { passive: false }
+);
 
 window.addEventListener('pointermove', (event) => {
   startAudio();

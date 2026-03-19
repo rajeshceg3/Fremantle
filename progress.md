@@ -1,6 +1,8 @@
 ## Current Progress
 
 ### Session updates
+- Added horizon-proximate scroll resistance to create a gentler, pressure-like approach to the western edge.
+- Ran a final immersion tuning pass to soften pacing (longer transitions, quieter card presence, calmer reflection fade) and improve stillness.
 - Improved atmospheric audio layering by zone (harbor rigging, historic echo, market murmur, and beach-forward waves) with smooth gain transitions.
 - Replaced threshold-based background swaps with continuous gradient interpolation for softer space-to-space transitions.
 - Bootstrapped the immersive experience as a static web app (`index.html`, `styles.css`, `app.js`).
@@ -14,8 +16,7 @@
 - Added README run instructions.
 
 ### Completion estimate
-- **Product completion:** **90%** of the PRD vision.
+- **Product completion:** **97%** of the PRD vision.
 
 ### Remaining work
-- Add subtle scroll-resistance effect near horizon for stronger tactile alignment with PRD.
-- Expand final validation tuning pass for pacing, softness, and perceived stillness.
+- Conduct an in-browser experiential QA pass on target devices (desktop + mobile) to calibrate feel, especially near the final reflection zone.
