@@ -226,6 +226,25 @@ body {
   transition: opacity 1.3s ease, transform 1.6s ease-out;
 }
 
+.water-shimmer.pulse {
+  animation: shimmer-pulse 1700ms ease-out 1;
+}
+
+@keyframes shimmer-pulse {
+  0% {
+    transform: scaleX(1);
+    opacity: 0.24;
+  }
+  45% {
+    transform: scaleX(1.03);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0.26;
+  }
+}
+
 .microcopy {
   position: fixed;
   top: 15vh;
@@ -259,6 +278,12 @@ body {
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(6px);
   transition: background 1200ms ease-out, transform 1200ms ease-out;
+}
+
+.space.is-current {
+  background: rgba(13, 20, 29, 0.76);
+  transform: translateY(-0.2rem);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.28);
 }
 
 .space h1,
