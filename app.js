@@ -10,8 +10,11 @@ const hudDetail = document.getElementById('hudDetail');
 const contrastToggle = document.getElementById('contrastToggle');
 const narrativeAnnouncer = document.getElementById('narrativeAnnouncer');
 const qaMode = new URLSearchParams(window.location.search).get('qa') === '1';
+const PRESENCE_MEMORY_KEY = 'fremantle_presence_v1';
 
 let lastInteraction = Date.now();
+let stillnessSampleTs = Date.now();
+let stillnessUnsavedSeconds = 0;
 let reflectionTimer;
 let audioCtx;
 let audioStarted = false;
@@ -42,6 +45,8 @@ let skyGlowDriftTimer;
 let activeDeepListeningTimer;
 let activeDeepListeningZone = '';
 let upperDragTracker = null;
+let presenceMemory = createPresenceMemoryStore();
+const reflectionVisitOffsetMs = presenceMemory.visitCount >= 3 ? 1000 + Math.floor(Math.random() * 1001) : 0;
 
 const DEEP_LISTEN_COOLDOWN_MS = 9000;
 const DEEP_LISTEN_DURATION_MS = 3200;
@@ -65,6 +70,63 @@ const ambientMomentsByZone = {
   'Bathers Beach': ['Foam collapses in amber light.', 'The horizon lowers into indigo.'],
   'Western Horizon': ['The harbor grows quieter than your breath.', 'The last light lingers, then releases.']
 };
+
+function createPresenceMemoryStore() {
+  const fallback = {
+    storageAvailable: false,
+    visitCount: 1,
+    firstVisitDate: new Date().toISOString(),
+    lastVisitedZone: 'Arrival',
+    cumulativeStillnessSeconds: 0,
+    surfacedMomentsByZone: {}
+  };
+
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return fallback;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(PRESENCE_MEMORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const memory = {
+      storageAvailable: true,
+      visitCount: Number.isFinite(parsed.visitCount) && parsed.visitCount > 0 ? parsed.visitCount + 1 : 1,
+      firstVisitDate: typeof parsed.firstVisitDate === 'string' ? parsed.firstVisitDate : new Date().toISOString(),
+      lastVisitedZone: typeof parsed.lastVisitedZone === 'string' ? parsed.lastVisitedZone : 'Arrival',
+      cumulativeStillnessSeconds: Number.isFinite(parsed.cumulativeStillnessSeconds) ? parsed.cumulativeStillnessSeconds : 0,
+      surfacedMomentsByZone: parsed.surfacedMomentsByZone && typeof parsed.surfacedMomentsByZone === 'object'
+        ? parsed.surfacedMomentsByZone
+        : {}
+    };
+    persistPresenceMemory(memory);
+    return memory;
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function persistPresenceMemory(memory = presenceMemory) {
+  if (!memory?.storageAvailable) {
+    return;
+  }
+  try {
+    const payload = {
+      visitCount: memory.visitCount,
+      firstVisitDate: memory.firstVisitDate,
+      lastVisitedZone: memory.lastVisitedZone,
+      cumulativeStillnessSeconds: memory.cumulativeStillnessSeconds,
+      surfacedMomentsByZone: memory.surfacedMomentsByZone
+    };
+    window.localStorage.setItem(PRESENCE_MEMORY_KEY, JSON.stringify(payload));
+  } catch (_error) {
+    // fail silently by design
+  }
+}
+
+if (presenceMemory.visitCount >= 2) {
+  zoneWhispers['Western Horizon'] = ['Hold still at the edge.', 'You have been here before; stay a breath longer.'];
+  ambientMomentsByZone['Harbor Edge'] = ['A ferry bell folds into the wind.', 'Rigging remembers your earlier pace.'];
+}
 
 const colorKeyframes = [
   {
@@ -289,6 +351,10 @@ function updateDepth() {
   const nearReflection = progress > reflectionThreshold;
   const zone = zoneLabel(progress);
   currentZone = zone;
+  if (presenceMemory.lastVisitedZone !== zone) {
+    presenceMemory.lastVisitedZone = zone;
+    persistPresenceMemory();
+  }
 
   if (hudStatus) {
     hudStatus.textContent = `${zone} • ${(progress * 100).toFixed(0)}% explored`;
@@ -312,7 +378,7 @@ function updateDepth() {
         finalLine.classList.add('visible');
         document.documentElement.style.setProperty('--luma', '0.18');
       }
-    }, reflectionStillness + 20);
+    }, reflectionStillness + reflectionVisitOffsetMs + 20);
   } else {
     finalLine.classList.remove('visible');
     document.documentElement.style.setProperty('--luma', '1');
@@ -398,7 +464,18 @@ function runAmbientMoment() {
     return;
   }
   const lines = ambientMomentsByZone[currentZone] || ambientMomentsByZone.Arrival;
-  const line = lines[Math.floor(Math.random() * lines.length)];
+  const surfaced = Array.isArray(presenceMemory.surfacedMomentsByZone[currentZone])
+    ? presenceMemory.surfacedMomentsByZone[currentZone]
+    : [];
+  const unseenIndexes = lines
+    .map((_, index) => index)
+    .filter((index) => !surfaced.includes(index));
+  const selectionPool = unseenIndexes.length ? unseenIndexes : lines.map((_, index) => index);
+  const nextIndex = selectionPool[Math.floor(Math.random() * selectionPool.length)];
+  const line = lines[nextIndex];
+  const refreshed = unseenIndexes.length ? [...surfaced, nextIndex] : [nextIndex];
+  presenceMemory.surfacedMomentsByZone[currentZone] = refreshed;
+  persistPresenceMemory();
   microcopy.textContent = line;
   microcopy.classList.add('visible');
   shimmer.classList.add('pulse');
@@ -611,6 +688,20 @@ function pauseWatcher() {
     return;
   }
 
+  const now = Date.now();
+  if (now - lastInteraction > 1200) {
+    const elapsedSeconds = (now - stillnessSampleTs) / 1000;
+    if (elapsedSeconds > 0) {
+      presenceMemory.cumulativeStillnessSeconds += elapsedSeconds;
+      stillnessUnsavedSeconds += elapsedSeconds;
+      if (stillnessUnsavedSeconds >= 1) {
+        persistPresenceMemory();
+        stillnessUnsavedSeconds = 0;
+      }
+    }
+  }
+  stillnessSampleTs = now;
+
   if (Date.now() - lastInteraction > 2000) {
     revealZoneMicrocopy();
   }
@@ -770,6 +861,10 @@ window.addEventListener('pointerup', () => {
 
 window.addEventListener('pointercancel', () => {
   upperDragTracker = null;
+});
+
+window.addEventListener('beforeunload', () => {
+  persistPresenceMemory();
 });
 
 if (contrastToggle) {
