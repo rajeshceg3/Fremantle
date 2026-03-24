@@ -23,6 +23,25 @@ python3 -m unittest -q tests/test_immersion_contract.py
 
 This smoke suite verifies key PRD-aligned behaviors (timing gates, narrative spaces, whisper-card word budgets, and horizon resistance constraints).
 
+## Autonomous PR conflict resolution agent
+
+This repository now includes a GitHub PR merge-conflict resolution helper:
+
+```bash
+python3 tools/pr_resolution_agent.py https://github.com/<owner>/<repo>/pull/<number>
+```
+
+What it does:
+- fetches the original PR metadata (base/head),
+- creates a resolution branch from the PR head,
+- merges base into head and resolves conflict markers with deterministic rules,
+- runs discoverable checks (pytest / npm test / make test when present),
+- commits only resolution changes and opens a new PR back to the original base branch.
+
+Resolution policy is intentionally conservative:
+- preserve original PR intent by default,
+- prefer base branch behavior when conflicts touch contracts, security, permissions, or public API hints.
+
 ## Experience enrichment approach (without clutter)
 
 To keep immersion high while avoiding UI noise, enhancements should follow three constraints:
