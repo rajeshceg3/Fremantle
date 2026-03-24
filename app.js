@@ -32,6 +32,21 @@ let lastScrollY = window.scrollY;
 let lastScrollTs = performance.now();
 let scrollVelocity = 0;
 const visitedZones = new Set();
+const deepListeningZones = new Set();
+let deepListeningCooldownUntil = 0;
+let windGestureCooldownUntil = 0;
+let windBaseOffset = 0;
+let windGestureBias = 0;
+let windGestureTimer;
+let skyGlowDriftTimer;
+let activeDeepListeningTimer;
+let activeDeepListeningZone = '';
+let upperDragTracker = null;
+
+const DEEP_LISTEN_COOLDOWN_MS = 9000;
+const DEEP_LISTEN_DURATION_MS = 3200;
+const WIND_GESTURE_COOLDOWN_MS = 6500;
+const WIND_GESTURE_DURATION_MS = 2400;
 
 const zoneWhispers = {
   Arrival: ['Salt before streets.', 'Light arrives first.'],
@@ -339,6 +354,11 @@ function pulseShimmer() {
   shimmerPulseTimer = setTimeout(() => shimmer.classList.remove('pulse'), 2000);
 }
 
+function applyWindOffsets() {
+  const offset = clamp(windBaseOffset + windGestureBias, -22, 22);
+  document.documentElement.style.setProperty('--wind-x', `${offset.toFixed(2)}px`);
+}
+
 function revealZoneMicrocopy(force = false) {
   if (prefersReducedMotion) {
     return;
@@ -441,6 +461,98 @@ function noteActivity() {
   }
 }
 
+function amplifyZoneAudio(zone) {
+  if (!audioLayers || prefersReducedMotion) {
+    return;
+  }
+
+  const boost = {
+    windGain: 0.23,
+    waveGain: 0.024,
+    riggingGain: 0.06,
+    echoGain: 0.04,
+    marketGain: 0.05
+  };
+
+  if (zone === 'Harbor Edge') boost.riggingGain = 0.16;
+  if (zone === 'Historic Core') boost.echoGain = 0.095;
+  if (zone === 'Market Pulse') boost.marketGain = 0.12;
+  if (zone === 'Bathers Beach' || zone === 'Western Horizon') {
+    boost.waveGain = 0.072;
+    boost.windGain = 0.28;
+  }
+
+  setGain(audioLayers.windGain, boost.windGain, 0.45);
+  setGain(audioLayers.waveGain, boost.waveGain, 0.45);
+  setGain(audioLayers.riggingGain, boost.riggingGain, 0.45);
+  setGain(audioLayers.echoGain, boost.echoGain, 0.45);
+  setGain(audioLayers.marketGain, boost.marketGain, 0.45);
+}
+
+function triggerDeepListening(card) {
+  const zone = card.querySelector('h2, h1')?.textContent?.trim() || currentZone;
+  const now = Date.now();
+  if (now < deepListeningCooldownUntil || deepListeningZones.has(zone)) {
+    return;
+  }
+
+  deepListeningCooldownUntil = now + DEEP_LISTEN_COOLDOWN_MS;
+  deepListeningZones.add(zone);
+  activeDeepListeningZone = zone;
+
+  const detailLine = prefersReducedMotion
+    ? `${zone}: Deep listening noted.`
+    : `${zone}: Deep listening active for a moment.`;
+  microcopy.textContent = detailLine;
+  microcopy.classList.add('visible');
+  pulseShimmer();
+  if (narrativeAnnouncer) {
+    narrativeAnnouncer.textContent = `${zone} deep listening active.`;
+  }
+
+  startAudio();
+  amplifyZoneAudio(zone);
+  clearTimeout(activeDeepListeningTimer);
+  activeDeepListeningTimer = setTimeout(() => {
+    if (activeDeepListeningZone === zone) {
+      activeDeepListeningZone = '';
+      updateAudioByProgress(Math.min(window.scrollY / Math.max(document.body.scrollHeight - window.innerHeight, 1), 1));
+      if (!prefersReducedMotion) {
+        revealZoneMicrocopy(true);
+      }
+    }
+  }, prefersReducedMotion ? 1800 : DEEP_LISTEN_DURATION_MS);
+}
+
+function triggerWindBias(direction) {
+  if (prefersReducedMotion || Date.now() < windGestureCooldownUntil) {
+    return;
+  }
+
+  windGestureCooldownUntil = Date.now() + WIND_GESTURE_COOLDOWN_MS;
+  const target = clamp(direction * 8, -8, 8);
+  clearTimeout(windGestureTimer);
+  clearTimeout(skyGlowDriftTimer);
+  windGestureBias = target;
+  applyWindOffsets();
+
+  const driftNow = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--drift-x')) || 0;
+  document.documentElement.style.setProperty('--drift-x', `${(driftNow + direction * 10).toFixed(2)}px`);
+
+  if (narrativeAnnouncer) {
+    narrativeAnnouncer.textContent = `Wind drift gently biases ${direction > 0 ? 'east' : 'west'}.`;
+  }
+
+  windGestureTimer = setTimeout(() => {
+    windGestureBias = 0;
+    applyWindOffsets();
+  }, WIND_GESTURE_DURATION_MS);
+
+  skyGlowDriftTimer = setTimeout(() => {
+    updateDepth();
+  }, WIND_GESTURE_DURATION_MS + 200);
+}
+
 function zoneLabel(progress) {
   if (progress < 0.3) return 'Arrival';
   if (progress < 0.52) return 'Harbor Edge';
@@ -532,8 +644,8 @@ window.addEventListener(
 window.addEventListener('pointermove', (event) => {
   startAudio();
   noteActivity();
-  const offset = (event.clientX / window.innerWidth - 0.5) * 18;
-  document.documentElement.style.setProperty('--wind-x', `${offset}px`);
+  windBaseOffset = (event.clientX / window.innerWidth - 0.5) * 18;
+  applyWindOffsets();
 });
 
 window.addEventListener('touchstart', () => {
@@ -554,7 +666,8 @@ window.addEventListener(
     }
 
     const delta = clamp(point.clientX - touchDragX, -42, 42);
-    document.documentElement.style.setProperty('--wind-x', `${(delta / 42) * 14}px`);
+    windBaseOffset = (delta / 42) * 14;
+    applyWindOffsets();
     noteActivity();
   },
   { passive: true }
@@ -592,6 +705,71 @@ whisperTriggers.forEach((trigger) => {
       }
     }
   });
+});
+
+spaceCards.forEach((card) => {
+  let pressTimer;
+
+  const startPress = () => {
+    if (prefersReducedMotion) {
+      return;
+    }
+    pressTimer = setTimeout(() => {
+      triggerDeepListening(card);
+    }, 650);
+  };
+
+  const endPress = () => {
+    clearTimeout(pressTimer);
+  };
+
+  card.addEventListener('pointerdown', startPress);
+  card.addEventListener('pointerup', endPress);
+  card.addEventListener('pointerleave', endPress);
+  card.addEventListener('pointercancel', endPress);
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (prefersReducedMotion) {
+    return;
+  }
+  if (event.clientY > window.innerHeight * 0.34) {
+    upperDragTracker = null;
+    return;
+  }
+  upperDragTracker = {
+    startX: event.clientX,
+    startY: event.clientY,
+    startTs: performance.now(),
+    pointerId: event.pointerId,
+    triggered: false
+  };
+});
+
+window.addEventListener('pointermove', (event) => {
+  if (!upperDragTracker || upperDragTracker.triggered || event.pointerId !== upperDragTracker.pointerId) {
+    return;
+  }
+
+  const elapsed = Math.max(performance.now() - upperDragTracker.startTs, 1);
+  const deltaX = event.clientX - upperDragTracker.startX;
+  const deltaY = Math.abs(event.clientY - upperDragTracker.startY);
+  const speed = Math.abs(deltaX) / elapsed;
+  const isSlow = speed <= 0.22;
+  const isHorizontal = deltaY < 28;
+
+  if (Math.abs(deltaX) >= 42 && isSlow && isHorizontal) {
+    upperDragTracker.triggered = true;
+    triggerWindBias(Math.sign(deltaX) || 1);
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  upperDragTracker = null;
+});
+
+window.addEventListener('pointercancel', () => {
+  upperDragTracker = null;
 });
 
 if (contrastToggle) {
