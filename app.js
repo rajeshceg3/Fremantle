@@ -34,6 +34,11 @@ let ambientMomentTimer;
 let lastScrollY = window.scrollY;
 let lastScrollTs = performance.now();
 let scrollVelocity = 0;
+let smoothedScrollVelocity = 0;
+let lastPauseStartedAt = Date.now();
+let lastPauseDuration = 0;
+const visitedZones = new Set();
+const zoneOrder = ['Arrival', 'Harbor Edge', 'Historic Core', 'Market Pulse', 'Bathers Beach', 'Western Horizon'];
 let pauseWatcherActive = false;
 const visitedZones = new Set();
 const deepListeningZones = new Set();
@@ -62,12 +67,131 @@ const zoneWhispers = {
 };
 
 const ambientMomentsByZone = {
-  Arrival: ['A gull traces the same arc twice.', 'Light softens as cloud-thin shade passes.'],
-  'Harbor Edge': ['A ferry bell folds into the wind.', 'Mast lines answer each other in metal clicks.'],
-  'Historic Core': ['Cool stone keeps yesterday in the air.', 'Footsteps return as a distant echo.'],
-  'Market Pulse': ['Warm voices overlap, then drift apart.', 'Citrus and bread rise through the lane.'],
-  'Bathers Beach': ['Foam collapses in amber light.', 'The horizon lowers into indigo.'],
-  'Western Horizon': ['The harbor grows quieter than your breath.', 'The last light lingers, then releases.']
+  Arrival: {
+    common: ['A gull traces the same arc twice.', 'Light softens as cloud-thin shade passes.'],
+    rare: ['A tide line glints, then disappears.'],
+    veryRare: ['For one second, the harbor sounds almost inland.']
+  },
+  'Harbor Edge': {
+    common: ['A ferry bell folds into the wind.', 'Mast lines answer each other in metal clicks.'],
+    rare: ['A mooring rope tightens with a low wooden creak.'],
+    veryRare: ['A horn rolls from far across the channel, then thins.']
+  },
+  'Historic Core': {
+    common: ['Cool stone keeps yesterday in the air.', 'Footsteps return as a distant echo.'],
+    rare: ['Shade carries a dry scent of limestone and leaves.'],
+    veryRare: ['A narrow lane amplifies one voice, then releases it.']
+  },
+  'Market Pulse': {
+    common: ['Warm voices overlap, then drift apart.', 'Citrus and bread rise through the lane.'],
+    rare: ['A crate thuds once, followed by quick laughter.'],
+    veryRare: ['Spice and sea-salt meet for a breath, then fade.']
+  },
+  'Bathers Beach': {
+    common: ['Foam collapses in amber light.', 'The horizon lowers into indigo.'],
+    rare: ['Pebbles hush as a small wave reaches farther than expected.'],
+    veryRare: ['A final sun-path opens briefly across the water.']
+  },
+  'Western Horizon': {
+    common: ['The harbor grows quieter than your breath.', 'The last light lingers, then releases.'],
+    rare: ['Distant rigging taps arrive softer than before.'],
+    veryRare: ['For a beat, wind and water move in the same rhythm.']
+  }
+};
+
+function createSeededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state += 0x6D2B79F5;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const random = qaMode ? createSeededRandom(1337) : Math.random;
+
+const ambientScheduler = {
+  lastMomentAt: 0,
+  lastMomentZone: '',
+  lastMomentPool: '',
+  lastMomentLine: '',
+  minimumRareProgress: 0.34,
+  minimumVeryRareProgress: 0.58,
+  nextDelay() {
+    return 12000 + random() * 9000;
+  },
+  dynamicRefractoryMs() {
+    const zoneCoverage = visitedZones.size / zoneOrder.length;
+    const velocityPressure = clamp(smoothedScrollVelocity * 3800, 0, 6500);
+    const pauseRelief = clamp(lastPauseDuration * 0.35, 0, 9000);
+    const coverageRelief = zoneCoverage * 6000;
+    return clamp(60000 - pauseRelief - coverageRelief + velocityPressure, 35000, 60000);
+  },
+  isAdjacentZone(a, b) {
+    const left = zoneOrder.indexOf(a);
+    const right = zoneOrder.indexOf(b);
+    if (left === -1 || right === -1) {
+      return false;
+    }
+    return Math.abs(left - right) <= 1;
+  },
+  choosePool(progress) {
+    const pools = [{ name: 'common', weight: 0.7 }];
+    if (progress >= this.minimumRareProgress) {
+      pools.push({ name: 'rare', weight: 0.23 });
+    }
+    if (progress >= this.minimumVeryRareProgress) {
+      pools.push({ name: 'veryRare', weight: 0.07 });
+    }
+    const total = pools.reduce((sum, pool) => sum + pool.weight, 0);
+    let pick = random() * total;
+    for (const pool of pools) {
+      pick -= pool.weight;
+      if (pick <= 0) {
+        return pool.name;
+      }
+    }
+    return pools[0].name;
+  },
+  approve(zone, progress) {
+    const now = Date.now();
+    if (document.hidden || prefersReducedMotion) {
+      return { approved: false, reason: 'hidden-or-reduced-motion' };
+    }
+    if (visitedZones.size < 2) {
+      return { approved: false, reason: 'insufficient-zone-coverage' };
+    }
+    if (Date.now() - lastInteraction <= 1800) {
+      return { approved: false, reason: 'active-interaction' };
+    }
+    if (now - this.lastMomentAt < this.dynamicRefractoryMs()) {
+      return { approved: false, reason: 'global-refractory' };
+    }
+
+    const pool = this.choosePool(progress);
+    const zonePools = ambientMomentsByZone[zone] || ambientMomentsByZone.Arrival;
+    const lines = zonePools[pool] || zonePools.common;
+    if (!lines?.length) {
+      return { approved: false, reason: 'empty-pool' };
+    }
+
+    let line = lines[Math.floor(random() * lines.length)];
+    if (this.isAdjacentZone(zone, this.lastMomentZone) && line === this.lastMomentLine) {
+      const alternatives = lines.filter((candidate) => candidate !== this.lastMomentLine);
+      if (!alternatives.length) {
+        return { approved: false, reason: 'adjacent-repeat-guard' };
+      }
+      line = alternatives[Math.floor(random() * alternatives.length)];
+    }
+
+    this.lastMomentAt = now;
+    this.lastMomentZone = zone;
+    this.lastMomentPool = pool;
+    this.lastMomentLine = line;
+    return { approved: true, pool, line };
+  }
 };
 
 const colorKeyframes = [
@@ -443,21 +567,20 @@ function detailByZone(zone) {
 }
 
 function runAmbientMoment() {
-  if (document.hidden || prefersReducedMotion) {
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
+  const progress = Math.min(window.scrollY / Math.max(maxScroll, 1), 1);
+  const decision = ambientScheduler.approve(currentZone, progress);
+  if (!decision.approved) {
     return;
   }
-  const lines = ambientMomentsByZone[currentZone] || ambientMomentsByZone.Arrival;
-  const line = lines[Math.floor(Math.random() * lines.length)];
+
+  const { line } = decision;
   microcopy.textContent = line;
   microcopy.classList.add('visible');
-  shimmer.classList.add('pulse');
+  pulseShimmer();
   if (narrativeAnnouncer) {
     narrativeAnnouncer.textContent = `Ambient update in ${currentZone}: ${line}`;
   }
-  if (shimmerPulseTimer) {
-    clearTimeout(shimmerPulseTimer);
-  }
-  shimmerPulseTimer = setTimeout(() => shimmer.classList.remove('pulse'), 2000);
   const glow = document.querySelector('.sky-glow');
   if (!prefersReducedMotion) {
     glow?.classList.add('swell');
@@ -469,11 +592,9 @@ function scheduleAmbientMoment() {
   if (ambientMomentTimer) {
     clearTimeout(ambientMomentTimer);
   }
-  const delay = 16000 + Math.random() * 9000;
+  const delay = ambientScheduler.nextDelay();
   ambientMomentTimer = setTimeout(() => {
-    if (visitedZones.size >= 2 && Date.now() - lastInteraction > 1800) {
-      runAmbientMoment();
-    }
+    runAmbientMoment();
     scheduleAmbientMoment();
   }, delay);
 }
@@ -504,7 +625,12 @@ function applyHorizonResistance(deltaY) {
 }
 
 function noteActivity() {
-  lastInteraction = Date.now();
+  const now = Date.now();
+  if (now - lastInteraction > 300) {
+    lastPauseDuration = now - lastPauseStartedAt;
+  }
+  lastPauseStartedAt = now;
+  lastInteraction = now;
   microcopy.classList.remove('visible');
   finalLine.classList.remove('visible');
   if (audioCtx?.state === 'suspended') {
@@ -655,6 +781,7 @@ function updateQaPanel({ progress, visualProgress, nearReflection, reflectionThr
   qaLines.reflection.textContent = `Reflection gate: ${nearReflection ? 'armed' : 'idle'} @ ${(reflectionThreshold * 100).toFixed(0)}% / ${(reflectionStillness / 1000).toFixed(0)}s`;
   qaLines.viewport.textContent = `Viewport: ${isSmallViewport ? 'mobile' : 'desktop'}`;
   qaLines.motion.textContent = `Reduced motion: ${prefersReducedMotion ? 'on' : 'off'}`;
+  qaLines.motion.textContent += ` • Refractory: ${(ambientScheduler.dynamicRefractoryMs() / 1000).toFixed(1)}s • RNG: ${qaMode ? 'seed=1337' : 'live'}`;
 }
 
 function pauseWatcher() {
@@ -677,6 +804,7 @@ window.addEventListener('scroll', () => {
   const deltaY = Math.abs(window.scrollY - lastScrollY);
   const deltaT = Math.max(now - lastScrollTs, 1);
   scrollVelocity = deltaY / deltaT;
+  smoothedScrollVelocity = smoothedScrollVelocity * 0.82 + scrollVelocity * 0.18;
   lastScrollY = window.scrollY;
   lastScrollTs = now;
   updateDepth();
