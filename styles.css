@@ -102,17 +102,17 @@ body {
   width: min(92vw, 820px);
   padding: 0.95rem 1.1rem;
   border-radius: 1rem;
-  border: 1px solid var(--surface-border);
-  background: rgba(10, 16, 24, 0.72);
+  border: 0;
+  background: rgba(10, 16, 24, 0.66);
+  box-shadow: 0 20px 44px rgba(4, 8, 14, 0.24);
   backdrop-filter: blur(var(--panel-blur));
   color: var(--surface-text);
 }
 
 .hud-kicker {
   margin: 0;
-  text-transform: uppercase;
   font-size: 0.7rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   color: rgba(242, 242, 238, 0.8);
 }
 
@@ -138,18 +138,27 @@ body {
 }
 
 .hud-button {
-  border: 1px solid rgba(242, 242, 238, 0.5);
+  border: 1px solid rgba(242, 242, 238, 0.34);
   border-radius: 999px;
-  background: rgba(242, 242, 238, 0.12);
+  background: rgba(242, 242, 238, 0.08);
   color: #fff;
   padding: 0.4rem 0.8rem;
   font-size: 0.75rem;
   cursor: pointer;
+  transition: background calc(420ms * var(--transition-scale)) ease-out, border-color calc(420ms * var(--transition-scale)) ease-out;
 }
 
 .hud-button:hover,
 .hud-button:focus-visible {
-  background: rgba(242, 242, 238, 0.2);
+  background: rgba(242, 242, 238, 0.16);
+  border-color: rgba(242, 242, 238, 0.62);
+}
+
+.hud-shortcuts {
+  margin: 0.4rem 0 0;
+  font-size: 0.67rem;
+  letter-spacing: 0.05em;
+  color: rgba(232, 239, 249, 0.72);
 }
 
 .sky-glow {

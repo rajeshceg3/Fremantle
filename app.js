@@ -40,7 +40,6 @@ let lastPauseDuration = 0;
 const visitedZones = new Set();
 const zoneOrder = ['Arrival', 'Harbor Edge', 'Historic Core', 'Market Pulse', 'Bathers Beach', 'Western Horizon'];
 let pauseWatcherActive = false;
-const visitedZones = new Set();
 const deepListeningZones = new Set();
 let deepListeningCooldownUntil = 0;
 let windGestureCooldownUntil = 0;
@@ -983,9 +982,25 @@ if (contrastToggle) {
   contrastToggle.addEventListener('click', () => {
     contrastOverrideEnabled = !contrastOverrideEnabled;
     contrastToggle.setAttribute('aria-pressed', String(contrastOverrideEnabled));
+    contrastToggle.textContent = contrastOverrideEnabled ? 'Standard contrast' : 'High contrast';
     updateAccessibilityVariables();
   });
 }
+
+window.addEventListener('keydown', (event) => {
+  if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) {
+    return;
+  }
+  if (event.key?.toLowerCase() !== 'c') {
+    return;
+  }
+  contrastOverrideEnabled = !contrastOverrideEnabled;
+  if (contrastToggle) {
+    contrastToggle.setAttribute('aria-pressed', String(contrastOverrideEnabled));
+    contrastToggle.textContent = contrastOverrideEnabled ? 'Standard contrast' : 'High contrast';
+  }
+  updateAccessibilityVariables();
+});
 
 watchMediaQuery('(prefers-reduced-motion: reduce)', (matches) => {
   prefersReducedMotion = matches;
