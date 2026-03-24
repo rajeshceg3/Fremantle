@@ -17,7 +17,10 @@ let audioCtx;
 let audioStarted = false;
 let audioLayers;
 let resistingScroll = false;
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let prefersReducedMotion = false;
+let prefersMoreContrast = false;
+let prefersReducedTransparency = false;
+let contrastOverrideEnabled = false;
 const isSmallViewport = window.matchMedia('(max-width: 760px)').matches;
 let touchDragX = null;
 let qaPanel;
@@ -36,6 +39,23 @@ let lastPauseStartedAt = Date.now();
 let lastPauseDuration = 0;
 const visitedZones = new Set();
 const zoneOrder = ['Arrival', 'Harbor Edge', 'Historic Core', 'Market Pulse', 'Bathers Beach', 'Western Horizon'];
+let pauseWatcherActive = false;
+const visitedZones = new Set();
+const deepListeningZones = new Set();
+let deepListeningCooldownUntil = 0;
+let windGestureCooldownUntil = 0;
+let windBaseOffset = 0;
+let windGestureBias = 0;
+let windGestureTimer;
+let skyGlowDriftTimer;
+let activeDeepListeningTimer;
+let activeDeepListeningZone = '';
+let upperDragTracker = null;
+
+const DEEP_LISTEN_COOLDOWN_MS = 9000;
+const DEEP_LISTEN_DURATION_MS = 3200;
+const WIND_GESTURE_COOLDOWN_MS = 6500;
+const WIND_GESTURE_DURATION_MS = 2400;
 
 const zoneWhispers = {
   Arrival: ['Salt before streets.', 'Light arrives first.'],
@@ -198,6 +218,51 @@ const colorKeyframes = [
 ];
 
 setTimeout(() => horizon.classList.add('revealed'), 6800);
+
+function watchMediaQuery(query, onChange) {
+  if (!window.matchMedia) {
+    return null;
+  }
+  const media = window.matchMedia(query);
+  onChange(media.matches);
+  const listener = (event) => onChange(event.matches);
+  if (typeof media.addEventListener === 'function') {
+    media.addEventListener('change', listener);
+  } else if (typeof media.addListener === 'function') {
+    media.addListener(listener);
+  }
+  return media;
+}
+
+function updateAccessibilityVariables() {
+  const root = document.documentElement;
+  const adaptiveContrast = prefersMoreContrast && !contrastOverrideEnabled;
+  const reducedTransparency = prefersReducedTransparency;
+
+  if (adaptiveContrast || contrastOverrideEnabled) {
+    root.style.setProperty('--surface-veil', reducedTransparency ? 'rgba(0, 0, 0, 0.9)' : 'rgba(5, 10, 18, 0.84)');
+    root.style.setProperty('--surface-border', 'rgba(255, 255, 255, 0.92)');
+    root.style.setProperty('--surface-text', 'rgba(255, 255, 255, 1)');
+  } else {
+    root.style.setProperty('--surface-veil', reducedTransparency ? 'rgba(16, 22, 32, 0.9)' : 'rgba(9, 15, 24, 0.42)');
+    root.style.setProperty('--surface-border', reducedTransparency ? 'rgba(242, 242, 238, 0.5)' : 'rgba(242, 242, 238, 0.24)');
+    root.style.setProperty('--surface-text', 'rgba(248, 250, 255, 0.97)');
+  }
+
+  root.style.setProperty('--panel-blur', reducedTransparency ? '0px' : '8px');
+  root.style.setProperty('--card-blur', reducedTransparency ? '0px' : '6px');
+  root.style.setProperty('--qa-blur', reducedTransparency ? '0px' : '8px');
+  root.style.setProperty('--transition-scale', prefersReducedMotion ? '0.35' : '1');
+  document.body.classList.toggle('reduce-motion', prefersReducedMotion);
+  document.body.classList.toggle('reduce-transparency', reducedTransparency);
+  document.body.classList.toggle('high-contrast', contrastOverrideEnabled);
+
+  if (!prefersReducedMotion && !pauseWatcherActive) {
+    pauseWatcher();
+  }
+
+  updateDepth();
+}
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -405,7 +470,7 @@ function updateDepth() {
     hudDetail.textContent = detailByZone(zone);
   }
   if (narrativeAnnouncer && zone !== lastAnnouncedZone) {
-    narrativeAnnouncer.textContent = `Now entering ${zone}.`;
+    narrativeAnnouncer.textContent = `Current zone: ${zone}. Exploration ${(progress * 100).toFixed(0)} percent.`;
     pulseShimmer();
     updateCurrentSpace(zone);
     visitedZones.add(zone);
@@ -462,6 +527,11 @@ function pulseShimmer() {
   shimmerPulseTimer = setTimeout(() => shimmer.classList.remove('pulse'), 2000);
 }
 
+function applyWindOffsets() {
+  const offset = clamp(windBaseOffset + windGestureBias, -22, 22);
+  document.documentElement.style.setProperty('--wind-x', `${offset.toFixed(2)}px`);
+}
+
 function revealZoneMicrocopy(force = false) {
   if (prefersReducedMotion) {
     return;
@@ -509,11 +579,13 @@ function runAmbientMoment() {
   microcopy.classList.add('visible');
   pulseShimmer();
   if (narrativeAnnouncer) {
-    narrativeAnnouncer.textContent = line;
+    narrativeAnnouncer.textContent = `Ambient update in ${currentZone}: ${line}`;
   }
   const glow = document.querySelector('.sky-glow');
-  glow?.classList.add('swell');
-  setTimeout(() => glow?.classList.remove('swell'), 2200);
+  if (!prefersReducedMotion) {
+    glow?.classList.add('swell');
+    setTimeout(() => glow?.classList.remove('swell'), 2200);
+  }
 }
 
 function scheduleAmbientMoment() {
@@ -564,6 +636,98 @@ function noteActivity() {
   if (audioCtx?.state === 'suspended') {
     audioCtx.resume();
   }
+}
+
+function amplifyZoneAudio(zone) {
+  if (!audioLayers || prefersReducedMotion) {
+    return;
+  }
+
+  const boost = {
+    windGain: 0.23,
+    waveGain: 0.024,
+    riggingGain: 0.06,
+    echoGain: 0.04,
+    marketGain: 0.05
+  };
+
+  if (zone === 'Harbor Edge') boost.riggingGain = 0.16;
+  if (zone === 'Historic Core') boost.echoGain = 0.095;
+  if (zone === 'Market Pulse') boost.marketGain = 0.12;
+  if (zone === 'Bathers Beach' || zone === 'Western Horizon') {
+    boost.waveGain = 0.072;
+    boost.windGain = 0.28;
+  }
+
+  setGain(audioLayers.windGain, boost.windGain, 0.45);
+  setGain(audioLayers.waveGain, boost.waveGain, 0.45);
+  setGain(audioLayers.riggingGain, boost.riggingGain, 0.45);
+  setGain(audioLayers.echoGain, boost.echoGain, 0.45);
+  setGain(audioLayers.marketGain, boost.marketGain, 0.45);
+}
+
+function triggerDeepListening(card) {
+  const zone = card.querySelector('h2, h1')?.textContent?.trim() || currentZone;
+  const now = Date.now();
+  if (now < deepListeningCooldownUntil || deepListeningZones.has(zone)) {
+    return;
+  }
+
+  deepListeningCooldownUntil = now + DEEP_LISTEN_COOLDOWN_MS;
+  deepListeningZones.add(zone);
+  activeDeepListeningZone = zone;
+
+  const detailLine = prefersReducedMotion
+    ? `${zone}: Deep listening noted.`
+    : `${zone}: Deep listening active for a moment.`;
+  microcopy.textContent = detailLine;
+  microcopy.classList.add('visible');
+  pulseShimmer();
+  if (narrativeAnnouncer) {
+    narrativeAnnouncer.textContent = `${zone} deep listening active.`;
+  }
+
+  startAudio();
+  amplifyZoneAudio(zone);
+  clearTimeout(activeDeepListeningTimer);
+  activeDeepListeningTimer = setTimeout(() => {
+    if (activeDeepListeningZone === zone) {
+      activeDeepListeningZone = '';
+      updateAudioByProgress(Math.min(window.scrollY / Math.max(document.body.scrollHeight - window.innerHeight, 1), 1));
+      if (!prefersReducedMotion) {
+        revealZoneMicrocopy(true);
+      }
+    }
+  }, prefersReducedMotion ? 1800 : DEEP_LISTEN_DURATION_MS);
+}
+
+function triggerWindBias(direction) {
+  if (prefersReducedMotion || Date.now() < windGestureCooldownUntil) {
+    return;
+  }
+
+  windGestureCooldownUntil = Date.now() + WIND_GESTURE_COOLDOWN_MS;
+  const target = clamp(direction * 8, -8, 8);
+  clearTimeout(windGestureTimer);
+  clearTimeout(skyGlowDriftTimer);
+  windGestureBias = target;
+  applyWindOffsets();
+
+  const driftNow = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--drift-x')) || 0;
+  document.documentElement.style.setProperty('--drift-x', `${(driftNow + direction * 10).toFixed(2)}px`);
+
+  if (narrativeAnnouncer) {
+    narrativeAnnouncer.textContent = `Wind drift gently biases ${direction > 0 ? 'east' : 'west'}.`;
+  }
+
+  windGestureTimer = setTimeout(() => {
+    windGestureBias = 0;
+    applyWindOffsets();
+  }, WIND_GESTURE_DURATION_MS);
+
+  skyGlowDriftTimer = setTimeout(() => {
+    updateDepth();
+  }, WIND_GESTURE_DURATION_MS + 200);
 }
 
 function zoneLabel(progress) {
@@ -621,7 +785,9 @@ function updateQaPanel({ progress, visualProgress, nearReflection, reflectionThr
 }
 
 function pauseWatcher() {
+  pauseWatcherActive = true;
   if (prefersReducedMotion) {
+    pauseWatcherActive = false;
     return;
   }
 
@@ -659,8 +825,8 @@ window.addEventListener(
 window.addEventListener('pointermove', (event) => {
   startAudio();
   noteActivity();
-  const offset = (event.clientX / window.innerWidth - 0.5) * 18;
-  document.documentElement.style.setProperty('--wind-x', `${offset}px`);
+  windBaseOffset = (event.clientX / window.innerWidth - 0.5) * 18;
+  applyWindOffsets();
 });
 
 window.addEventListener('touchstart', () => {
@@ -681,7 +847,8 @@ window.addEventListener(
     }
 
     const delta = clamp(point.clientX - touchDragX, -42, 42);
-    document.documentElement.style.setProperty('--wind-x', `${(delta / 42) * 14}px`);
+    windBaseOffset = (delta / 42) * 14;
+    applyWindOffsets();
     noteActivity();
   },
   { passive: true }
@@ -691,43 +858,149 @@ window.addEventListener('touchend', () => {
   touchDragX = null;
 });
 
-whisperTriggers.forEach((trigger) => {
-  trigger.setAttribute('aria-expanded', 'false');
-  trigger.addEventListener('click', () => {
-    const shouldOpen = !trigger.classList.contains('open');
-    whisperTriggers.forEach((item) => {
-      item.classList.remove('open');
-      item.setAttribute('aria-expanded', 'false');
-    });
-    if (shouldOpen) {
-      trigger.classList.add('open');
-      trigger.setAttribute('aria-expanded', 'true');
-    }
+function setWhisperExpanded(trigger, expanded) {
+  trigger.classList.toggle('open', expanded);
+  trigger.setAttribute('aria-expanded', String(expanded));
+  const detail = trigger.querySelector('.whisper-card');
+  if (detail) {
+    detail.setAttribute('aria-hidden', String(!expanded));
+  }
+}
+
+function toggleWhisper(trigger) {
+  const shouldOpen = !trigger.classList.contains('open');
+  whisperTriggers.forEach((item) => {
+    item.classList.remove('open');
+    setWhisperExpanded(item, false);
   });
+  if (shouldOpen) {
+    setWhisperExpanded(trigger, true);
+    if (narrativeAnnouncer) {
+      const heading = trigger.querySelector('h2')?.textContent?.trim() || trigger.getAttribute('aria-label') || 'Card';
+      narrativeAnnouncer.textContent = `${heading} details expanded.`;
+    }
+  } else if (narrativeAnnouncer) {
+    const heading = trigger.querySelector('h2')?.textContent?.trim() || trigger.getAttribute('aria-label') || 'Card';
+    narrativeAnnouncer.textContent = `${heading} details collapsed.`;
+  }
+}
+
+whisperTriggers.forEach((trigger, index) => {
+  const detail = trigger.querySelector('.whisper-card');
+  const detailId = detail?.id || `whisper-card-${index + 1}`;
+  if (detail) {
+    detail.id = detailId;
+    detail.setAttribute('aria-hidden', 'true');
+    detail.setAttribute('role', 'region');
+  }
+  trigger.setAttribute('role', 'button');
+  trigger.setAttribute('aria-controls', detailId);
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.addEventListener('click', () => toggleWhisper(trigger));
 
   trigger.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      const shouldOpen = !trigger.classList.contains('open');
-      whisperTriggers.forEach((item) => {
-        item.classList.remove('open');
-        item.setAttribute('aria-expanded', 'false');
-      });
-      if (shouldOpen) {
-        trigger.classList.add('open');
-        trigger.setAttribute('aria-expanded', 'true');
+      toggleWhisper(trigger);
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setWhisperExpanded(trigger, false);
+      if (narrativeAnnouncer) {
+        const heading = trigger.querySelector('h2')?.textContent?.trim() || trigger.getAttribute('aria-label') || 'Card';
+        narrativeAnnouncer.textContent = `${heading} details collapsed.`;
       }
     }
   });
 });
 
+spaceCards.forEach((card) => {
+  let pressTimer;
+
+  const startPress = () => {
+    if (prefersReducedMotion) {
+      return;
+    }
+    pressTimer = setTimeout(() => {
+      triggerDeepListening(card);
+    }, 650);
+  };
+
+  const endPress = () => {
+    clearTimeout(pressTimer);
+  };
+
+  card.addEventListener('pointerdown', startPress);
+  card.addEventListener('pointerup', endPress);
+  card.addEventListener('pointerleave', endPress);
+  card.addEventListener('pointercancel', endPress);
+});
+
+window.addEventListener('pointerdown', (event) => {
+  if (prefersReducedMotion) {
+    return;
+  }
+  if (event.clientY > window.innerHeight * 0.34) {
+    upperDragTracker = null;
+    return;
+  }
+  upperDragTracker = {
+    startX: event.clientX,
+    startY: event.clientY,
+    startTs: performance.now(),
+    pointerId: event.pointerId,
+    triggered: false
+  };
+});
+
+window.addEventListener('pointermove', (event) => {
+  if (!upperDragTracker || upperDragTracker.triggered || event.pointerId !== upperDragTracker.pointerId) {
+    return;
+  }
+
+  const elapsed = Math.max(performance.now() - upperDragTracker.startTs, 1);
+  const deltaX = event.clientX - upperDragTracker.startX;
+  const deltaY = Math.abs(event.clientY - upperDragTracker.startY);
+  const speed = Math.abs(deltaX) / elapsed;
+  const isSlow = speed <= 0.22;
+  const isHorizontal = deltaY < 28;
+
+  if (Math.abs(deltaX) >= 42 && isSlow && isHorizontal) {
+    upperDragTracker.triggered = true;
+    triggerWindBias(Math.sign(deltaX) || 1);
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  upperDragTracker = null;
+});
+
+window.addEventListener('pointercancel', () => {
+  upperDragTracker = null;
+});
+
 if (contrastToggle) {
   contrastToggle.addEventListener('click', () => {
-    const isActive = document.body.classList.toggle('high-contrast');
-    contrastToggle.setAttribute('aria-pressed', String(isActive));
+    contrastOverrideEnabled = !contrastOverrideEnabled;
+    contrastToggle.setAttribute('aria-pressed', String(contrastOverrideEnabled));
+    updateAccessibilityVariables();
   });
 }
 
+watchMediaQuery('(prefers-reduced-motion: reduce)', (matches) => {
+  prefersReducedMotion = matches;
+  updateAccessibilityVariables();
+});
+watchMediaQuery('(prefers-contrast: more)', (matches) => {
+  prefersMoreContrast = matches;
+  updateAccessibilityVariables();
+});
+watchMediaQuery('(prefers-reduced-transparency: reduce)', (matches) => {
+  prefersReducedTransparency = matches;
+  updateAccessibilityVariables();
+});
+
+updateAccessibilityVariables();
 updateDepth();
 if (qaMode) {
   setupQaPanel();
