@@ -17,7 +17,10 @@ let audioCtx;
 let audioStarted = false;
 let audioLayers;
 let resistingScroll = false;
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let prefersReducedMotion = false;
+let prefersMoreContrast = false;
+let prefersReducedTransparency = false;
+let contrastOverrideEnabled = false;
 const isSmallViewport = window.matchMedia('(max-width: 760px)').matches;
 let touchDragX = null;
 let qaPanel;
@@ -31,6 +34,7 @@ let ambientMomentTimer;
 let lastScrollY = window.scrollY;
 let lastScrollTs = performance.now();
 let scrollVelocity = 0;
+let pauseWatcherActive = false;
 const visitedZones = new Set();
 const deepListeningZones = new Set();
 let deepListeningCooldownUntil = 0;
@@ -90,6 +94,51 @@ const colorKeyframes = [
 ];
 
 setTimeout(() => horizon.classList.add('revealed'), 6800);
+
+function watchMediaQuery(query, onChange) {
+  if (!window.matchMedia) {
+    return null;
+  }
+  const media = window.matchMedia(query);
+  onChange(media.matches);
+  const listener = (event) => onChange(event.matches);
+  if (typeof media.addEventListener === 'function') {
+    media.addEventListener('change', listener);
+  } else if (typeof media.addListener === 'function') {
+    media.addListener(listener);
+  }
+  return media;
+}
+
+function updateAccessibilityVariables() {
+  const root = document.documentElement;
+  const adaptiveContrast = prefersMoreContrast && !contrastOverrideEnabled;
+  const reducedTransparency = prefersReducedTransparency;
+
+  if (adaptiveContrast || contrastOverrideEnabled) {
+    root.style.setProperty('--surface-veil', reducedTransparency ? 'rgba(0, 0, 0, 0.9)' : 'rgba(5, 10, 18, 0.84)');
+    root.style.setProperty('--surface-border', 'rgba(255, 255, 255, 0.92)');
+    root.style.setProperty('--surface-text', 'rgba(255, 255, 255, 1)');
+  } else {
+    root.style.setProperty('--surface-veil', reducedTransparency ? 'rgba(16, 22, 32, 0.9)' : 'rgba(9, 15, 24, 0.42)');
+    root.style.setProperty('--surface-border', reducedTransparency ? 'rgba(242, 242, 238, 0.5)' : 'rgba(242, 242, 238, 0.24)');
+    root.style.setProperty('--surface-text', 'rgba(248, 250, 255, 0.97)');
+  }
+
+  root.style.setProperty('--panel-blur', reducedTransparency ? '0px' : '8px');
+  root.style.setProperty('--card-blur', reducedTransparency ? '0px' : '6px');
+  root.style.setProperty('--qa-blur', reducedTransparency ? '0px' : '8px');
+  root.style.setProperty('--transition-scale', prefersReducedMotion ? '0.35' : '1');
+  document.body.classList.toggle('reduce-motion', prefersReducedMotion);
+  document.body.classList.toggle('reduce-transparency', reducedTransparency);
+  document.body.classList.toggle('high-contrast', contrastOverrideEnabled);
+
+  if (!prefersReducedMotion && !pauseWatcherActive) {
+    pauseWatcher();
+  }
+
+  updateDepth();
+}
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -297,7 +346,7 @@ function updateDepth() {
     hudDetail.textContent = detailByZone(zone);
   }
   if (narrativeAnnouncer && zone !== lastAnnouncedZone) {
-    narrativeAnnouncer.textContent = `Now entering ${zone}.`;
+    narrativeAnnouncer.textContent = `Current zone: ${zone}. Exploration ${(progress * 100).toFixed(0)} percent.`;
     pulseShimmer();
     updateCurrentSpace(zone);
     visitedZones.add(zone);
@@ -403,15 +452,17 @@ function runAmbientMoment() {
   microcopy.classList.add('visible');
   shimmer.classList.add('pulse');
   if (narrativeAnnouncer) {
-    narrativeAnnouncer.textContent = line;
+    narrativeAnnouncer.textContent = `Ambient update in ${currentZone}: ${line}`;
   }
   if (shimmerPulseTimer) {
     clearTimeout(shimmerPulseTimer);
   }
   shimmerPulseTimer = setTimeout(() => shimmer.classList.remove('pulse'), 2000);
   const glow = document.querySelector('.sky-glow');
-  glow?.classList.add('swell');
-  setTimeout(() => glow?.classList.remove('swell'), 2200);
+  if (!prefersReducedMotion) {
+    glow?.classList.add('swell');
+    setTimeout(() => glow?.classList.remove('swell'), 2200);
+  }
 }
 
 function scheduleAmbientMoment() {
@@ -607,7 +658,9 @@ function updateQaPanel({ progress, visualProgress, nearReflection, reflectionThr
 }
 
 function pauseWatcher() {
+  pauseWatcherActive = true;
   if (prefersReducedMotion) {
+    pauseWatcherActive = false;
     return;
   }
 
@@ -677,31 +730,57 @@ window.addEventListener('touchend', () => {
   touchDragX = null;
 });
 
-whisperTriggers.forEach((trigger) => {
-  trigger.setAttribute('aria-expanded', 'false');
-  trigger.addEventListener('click', () => {
-    const shouldOpen = !trigger.classList.contains('open');
-    whisperTriggers.forEach((item) => {
-      item.classList.remove('open');
-      item.setAttribute('aria-expanded', 'false');
-    });
-    if (shouldOpen) {
-      trigger.classList.add('open');
-      trigger.setAttribute('aria-expanded', 'true');
-    }
+function setWhisperExpanded(trigger, expanded) {
+  trigger.classList.toggle('open', expanded);
+  trigger.setAttribute('aria-expanded', String(expanded));
+  const detail = trigger.querySelector('.whisper-card');
+  if (detail) {
+    detail.setAttribute('aria-hidden', String(!expanded));
+  }
+}
+
+function toggleWhisper(trigger) {
+  const shouldOpen = !trigger.classList.contains('open');
+  whisperTriggers.forEach((item) => {
+    item.classList.remove('open');
+    setWhisperExpanded(item, false);
   });
+  if (shouldOpen) {
+    setWhisperExpanded(trigger, true);
+    if (narrativeAnnouncer) {
+      const heading = trigger.querySelector('h2')?.textContent?.trim() || trigger.getAttribute('aria-label') || 'Card';
+      narrativeAnnouncer.textContent = `${heading} details expanded.`;
+    }
+  } else if (narrativeAnnouncer) {
+    const heading = trigger.querySelector('h2')?.textContent?.trim() || trigger.getAttribute('aria-label') || 'Card';
+    narrativeAnnouncer.textContent = `${heading} details collapsed.`;
+  }
+}
+
+whisperTriggers.forEach((trigger, index) => {
+  const detail = trigger.querySelector('.whisper-card');
+  const detailId = detail?.id || `whisper-card-${index + 1}`;
+  if (detail) {
+    detail.id = detailId;
+    detail.setAttribute('aria-hidden', 'true');
+    detail.setAttribute('role', 'region');
+  }
+  trigger.setAttribute('role', 'button');
+  trigger.setAttribute('aria-controls', detailId);
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.addEventListener('click', () => toggleWhisper(trigger));
 
   trigger.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      const shouldOpen = !trigger.classList.contains('open');
-      whisperTriggers.forEach((item) => {
-        item.classList.remove('open');
-        item.setAttribute('aria-expanded', 'false');
-      });
-      if (shouldOpen) {
-        trigger.classList.add('open');
-        trigger.setAttribute('aria-expanded', 'true');
+      toggleWhisper(trigger);
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setWhisperExpanded(trigger, false);
+      if (narrativeAnnouncer) {
+        const heading = trigger.querySelector('h2')?.textContent?.trim() || trigger.getAttribute('aria-label') || 'Card';
+        narrativeAnnouncer.textContent = `${heading} details collapsed.`;
       }
     }
   });
@@ -774,11 +853,26 @@ window.addEventListener('pointercancel', () => {
 
 if (contrastToggle) {
   contrastToggle.addEventListener('click', () => {
-    const isActive = document.body.classList.toggle('high-contrast');
-    contrastToggle.setAttribute('aria-pressed', String(isActive));
+    contrastOverrideEnabled = !contrastOverrideEnabled;
+    contrastToggle.setAttribute('aria-pressed', String(contrastOverrideEnabled));
+    updateAccessibilityVariables();
   });
 }
 
+watchMediaQuery('(prefers-reduced-motion: reduce)', (matches) => {
+  prefersReducedMotion = matches;
+  updateAccessibilityVariables();
+});
+watchMediaQuery('(prefers-contrast: more)', (matches) => {
+  prefersMoreContrast = matches;
+  updateAccessibilityVariables();
+});
+watchMediaQuery('(prefers-reduced-transparency: reduce)', (matches) => {
+  prefersReducedTransparency = matches;
+  updateAccessibilityVariables();
+});
+
+updateAccessibilityVariables();
 updateDepth();
 if (qaMode) {
   setupQaPanel();
