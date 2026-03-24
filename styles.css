@@ -158,6 +158,11 @@ body {
   transform: translateX(calc(var(--wind-x) * 0.4));
 }
 
+.sky-glow.swell {
+  transform: translateX(calc(var(--wind-x) * 0.4)) scale(1.02);
+  opacity: 0.38;
+}
+
 .horizon {
   position: fixed;
   top: 48vh;

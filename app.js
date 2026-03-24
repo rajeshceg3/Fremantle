@@ -27,6 +27,11 @@ let currentZone = 'Arrival';
 let lastMicrocopyZone = '';
 let microcopyIndex = 0;
 let shimmerPulseTimer;
+let ambientMomentTimer;
+let lastScrollY = window.scrollY;
+let lastScrollTs = performance.now();
+let scrollVelocity = 0;
+const visitedZones = new Set();
 
 const zoneWhispers = {
   Arrival: ['Salt before streets.', 'Light arrives first.'],
@@ -35,6 +40,15 @@ const zoneWhispers = {
   'Market Pulse': ['Warm voices drift together.', 'Color hums through lanes.'],
   'Bathers Beach': ['Amber slips into indigo.', 'Foam gathers dusk light.'],
   'Western Horizon': ['Hold still at the edge.', 'Evening settles in water.']
+};
+
+const ambientMomentsByZone = {
+  Arrival: ['A gull traces the same arc twice.', 'Light softens as cloud-thin shade passes.'],
+  'Harbor Edge': ['A ferry bell folds into the wind.', 'Mast lines answer each other in metal clicks.'],
+  'Historic Core': ['Cool stone keeps yesterday in the air.', 'Footsteps return as a distant echo.'],
+  'Market Pulse': ['Warm voices overlap, then drift apart.', 'Citrus and bread rise through the lane.'],
+  'Bathers Beach': ['Foam collapses in amber light.', 'The horizon lowers into indigo.'],
+  'Western Horizon': ['The harbor grows quieter than your breath.', 'The last light lingers, then releases.']
 };
 
 const colorKeyframes = [
@@ -271,6 +285,7 @@ function updateDepth() {
     narrativeAnnouncer.textContent = `Now entering ${zone}.`;
     pulseShimmer();
     updateCurrentSpace(zone);
+    visitedZones.add(zone);
     lastAnnouncedZone = zone;
   }
 
@@ -341,20 +356,55 @@ function revealZoneMicrocopy(force = false) {
 }
 
 function detailByZone(zone) {
+  const paceHint = scrollVelocity > 1.2 ? ' Slow your pace to feel the transitions.' : '';
   switch (zone) {
     case 'Harbor Edge':
-      return 'You are at the working shoreline: listen for rigging taps and ferry movement.';
+      return `You are at the working shoreline: listen for rigging taps and ferry movement.${paceHint}`;
     case 'Historic Core':
-      return 'Stone and shade soften sound here; movement feels slower and denser.';
+      return `Stone and shade soften sound here; movement feels slower and denser.${paceHint}`;
     case 'Market Pulse':
-      return 'Color and voices rise together, blending produce stalls with maker workshops.';
+      return `Color and voices rise together, blending produce stalls with maker workshops.${paceHint}`;
     case 'Bathers Beach':
-      return 'Evening tones shift from amber into indigo as the waterline darkens.';
+      return `Evening tones shift from amber into indigo as the waterline darkens.${paceHint}`;
     case 'Western Horizon':
-      return 'Hold still to let the final reflection sequence reveal itself.';
+      return `Hold still to let the final reflection sequence reveal itself.${paceHint}`;
     default:
-      return 'Move slowly: each stop reveals where you are, what surrounds you, and how the harbor shifts.';
+      return `Move slowly: each stop reveals where you are, what surrounds you, and how the harbor shifts.${paceHint}`;
   }
+}
+
+function runAmbientMoment() {
+  if (document.hidden || prefersReducedMotion) {
+    return;
+  }
+  const lines = ambientMomentsByZone[currentZone] || ambientMomentsByZone.Arrival;
+  const line = lines[Math.floor(Math.random() * lines.length)];
+  microcopy.textContent = line;
+  microcopy.classList.add('visible');
+  shimmer.classList.add('pulse');
+  if (narrativeAnnouncer) {
+    narrativeAnnouncer.textContent = line;
+  }
+  if (shimmerPulseTimer) {
+    clearTimeout(shimmerPulseTimer);
+  }
+  shimmerPulseTimer = setTimeout(() => shimmer.classList.remove('pulse'), 2000);
+  const glow = document.querySelector('.sky-glow');
+  glow?.classList.add('swell');
+  setTimeout(() => glow?.classList.remove('swell'), 2200);
+}
+
+function scheduleAmbientMoment() {
+  if (ambientMomentTimer) {
+    clearTimeout(ambientMomentTimer);
+  }
+  const delay = 16000 + Math.random() * 9000;
+  ambientMomentTimer = setTimeout(() => {
+    if (visitedZones.size >= 2 && Date.now() - lastInteraction > 1800) {
+      runAmbientMoment();
+    }
+    scheduleAmbientMoment();
+  }, delay);
 }
 
 function applyHorizonResistance(deltaY) {
@@ -458,6 +508,12 @@ function pauseWatcher() {
 window.addEventListener('scroll', () => {
   startAudio();
   noteActivity();
+  const now = performance.now();
+  const deltaY = Math.abs(window.scrollY - lastScrollY);
+  const deltaT = Math.max(now - lastScrollTs, 1);
+  scrollVelocity = deltaY / deltaT;
+  lastScrollY = window.scrollY;
+  lastScrollTs = now;
   updateDepth();
 });
 
@@ -551,3 +607,4 @@ if (qaMode) {
   updateDepth();
 }
 pauseWatcher();
+scheduleAmbientMoment();
