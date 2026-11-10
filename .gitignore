@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+dev_server.log
+
+test-results/
+verification/*.png
+
+verification/**/*.png
+__pycache__/
