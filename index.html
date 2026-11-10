@@ -2,91 +2,72 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fremantle — Quiet Harbor Engine</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#172d33" />
+    <meta
+      name="description"
+      content="Four illustrated Fremantle places to explore in 360 degrees. Working water, limestone and evening light."
+    />
+    <title>Fremantle | Working water</title>
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <a class="skip-link" href="#spaces">Skip to story spaces</a>
-    <main id="experience" aria-label="Immersive Fremantle experience">
-      <section class="experience-hud" aria-label="Experience controls and context">
-        <p class="hud-kicker">Fremantle presence guide</p>
-        <div class="hud-row">
-          <p class="hud-status" id="hudStatus">Arrival • 0% explored</p>
-          <button class="hud-button" id="contrastToggle" type="button" aria-pressed="false" aria-label="Toggle high contrast mode">
-            High contrast
-          </button>
-        </div>
-        <p class="hud-detail" id="hudDetail">
-          Move slowly: each stop reveals where you are, what surrounds you, and how the harbor shifts.
-        </p>
-        <p class="hud-shortcuts">Press C at any time to switch contrast.</p>
-      </section>
-
-      <div class="sky-glow" aria-hidden="true"></div>
-      <div class="horizon" id="horizon" aria-hidden="true"></div>
-
-      <section class="layer layer-foreground" aria-hidden="true">
-        <div class="rope rope-a"></div>
-        <div class="rope rope-b"></div>
-      </section>
-
-      <section class="layer layer-midground" aria-hidden="true">
-        <div class="water-shimmer" id="waterShimmer"></div>
-      </section>
-
-      <section class="layer layer-background" aria-hidden="true"></section>
-
-      <div class="microcopy" id="microcopy">Indian Ocean. West.</div>
-
-      <div class="spaces" id="spaces">
-        <article class="space" data-space="arrival">
-          <h1>Salt Before Structure</h1>
-          <p>The harbor arrives before words.</p>
-          <p class="space-meta">Feel: cool air · low tide mineral scent · ropes shifting against hulls.</p>
-        </article>
-        <article class="space whisper-trigger" data-space="harbor" tabindex="0" aria-label="Harbor Edge">
-          <h2>Harbor Edge</h2>
-          <p>Rigging taps. Wind grazes steel.</p>
-          <p class="space-meta">Look for: gull arcs, blue-gray wake lines, ferry bells layered over wind.</p>
-          <div class="whisper-card">
-            Fishing boats and ferries share this working waterline. Fremantle Harbor has linked Western Australia to Indian Ocean routes since the late 19th century.
-          </div>
-        </article>
-        <article class="space whisper-trigger" data-space="historic" tabindex="0" aria-label="Historic Core">
-          <h2>Historic Core</h2>
-          <p>Sandstone holds cooler shadows.</p>
-          <p class="space-meta">Texture: weathered limestone, softened echoes, narrow shade corridors.</p>
-          <div class="whisper-card">
-            Nearby limestone and sandstone architecture reflects convict-era construction. Heavier materials mute sound and slow the feel of movement.
-          </div>
-        </article>
-        <article class="space whisper-trigger" data-space="market" tabindex="0" aria-label="Market Pulse">
-          <h2>Market Pulse</h2>
-          <p>Murmur warms the lane.</p>
-          <p class="space-meta">Color: citrus stalls, ochre brick, hand-painted signs under warm canopies.</p>
-          <div class="whisper-card">
-            Fremantle Markets have been operating in the heritage hall precinct since 1897, blending produce, makers, and local voices in a low, constant hum.
-          </div>
-        </article>
-        <article class="space whisper-trigger" data-space="beach" tabindex="0" aria-label="Bathers Beach">
-          <h2>Bathers Beach</h2>
-          <p>Amber dusk over broken foam.</p>
-          <p class="space-meta">Palette: amber horizon, indigo water, rust-red sea wall at sundown.</p>
-          <div class="whisper-card">
-            Bathers Beach sits against the old harbor edge, where evening light lowers quickly and the sea tone deepens toward indigo.
-          </div>
-        </article>
-        <article class="space" data-space="reflection">
-          <h2>Western Horizon</h2>
-          <p>Stay still. Let it settle.</p>
-        </article>
+    <canvas
+      class="webgl"
+      tabindex="0"
+      aria-label="Explore Fremantle in 360 degrees. Drag or use arrow keys to orbit; scroll to zoom."
+    ></canvas>
+    <header>
+      <h1>Fremantle</h1>
+      <p id="scene-name">Fishing Boat Harbour</p>
+    </header>
+    <nav aria-label="Places">
+      <label for="view" class="sr-only">Choose a place</label
+      ><select id="view">
+        <option value="0">Fishing Boat Harbour</option>
+        <option value="1">The Round House</option>
+        <option value="2">Fremantle Markets</option>
+        <option value="3">Bathers Beach</option>
+      </select>
+      <div class="tools">
+        <button id="reset">Reset</button
+        ><button id="pause" aria-pressed="false">Pause</button
+        ><button id="sound" aria-pressed="false">Sound off</button
+        ><button id="about">About</button>
       </div>
-
-      <div class="final-line" id="finalLine">You've been here before.</div>
-      <p class="sr-only" id="narrativeAnnouncer" aria-live="polite"></p>
-    </main>
-
-    <script src="app.js"></script>
+      <p class="hint">Drag to explore. Find your own horizon.</p>
+    </nav>
+    <p id="scene-note" class="sr-only"></p>
+    <p id="status" class="sr-only" role="status"></p>
+    <dialog id="info">
+      <h2>Working water. Living city.</h2>
+      <p>
+        Fremantle is Walyalup, on Whadjuk Noongar Country. These four scenes are
+        illustrations, not a map, a surveyed reconstruction or live conditions.
+      </p>
+      <h3 id="fact-title">Fishing Boat Harbour</h3>
+      <p id="fact-copy">
+        The harbour's blue fishing vessels and timber jetties belong to a
+        working port, officially established in 1924. Migrant fishing
+        communities shaped its identity.
+      </p>
+      <p>
+        <a
+          id="fact-link"
+          href="https://www.wa.gov.au/government/document-collections/fishing-boat-harbour"
+          target="_blank"
+          rel="noopener"
+          >Read the WA heritage record</a
+        >
+      </p>
+      <p>
+        Drag or arrow keys to look around. Scroll or pinch to zoom. Reset
+        returns to the place's first view. Pause stops the optional sound and
+        water motion. Optional sound blends a quiet pentatonic pad with
+        synthesized wind and water. It is not a recording of Fremantle.
+      </p>
+      <button id="close-info">Back to the water</button>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

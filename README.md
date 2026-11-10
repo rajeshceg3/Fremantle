@@ -1,60 +1,30 @@
-# Fremantle
+# Fremantle | Working water
 
-Immersive single-page web experience inspired by the product brief in `PRD.md`.
+Four illustrated 3D places on Whadjuk Noongar Country: Fishing Boat Harbour, the Round House, Fremantle Markets and Bathers Beach. Drag or use arrow keys to orbit through 360 degrees, scroll/pinch to zoom and Reset to return to each place's first view.
 
-## Run locally
+## Run
 
-```bash
-python3 -m http.server 4173
-```
+- `npm ci`
+- `npm run dev`
+- `npm run build`
+- `npm test` (Playwright Chromium; `CHROME_PATH` can select an installed browser)
+- `python -m unittest discover -s tests`
 
-Open `http://localhost:4173`.
+`src/` and `index.html` are the current app. `app.js`, `styles.css`, the original PRD and prior progress notes describe the retired scroll-only version and are retained as history.
 
-For manual atmosphere QA on real devices, append `?qa=1` to enable a small diagnostics panel:
+## Controls and access
 
-`http://localhost:4173/?qa=1`
+The scene selector and tools stay visible. UI labels are at least 14px; controls are at least 46px tall. Opaque panels protect text from the scene behind it. Reduced-motion preference starts paused. Water shimmer and optional audio stop on Pause and on a hidden page. Sound is off until explicitly enabled. It combines synthesized water/wind and a quiet pentatonic pad, not a location recording.
 
+The geometry is an illustration, not a surveyed reconstruction or a map. No external photos or audio are embedded. About includes sources and the Round House's incarceration history, not only its architecture.
 
-## Validate experience contract
+## Sources
 
-```bash
-python3 -m unittest -q tests/test_immersion_contract.py
-```
+- https://www.wa.gov.au/government/document-collections/fishing-boat-harbour
+- https://www.wa.gov.au/government/document-collections/round-house-and-arthur-head-reserve
+- https://www.wa.gov.au/government/document-collections/fremantle-markets
+- https://inherit.dplh.wa.gov.au/public/inventory/details/1f087a53-56c0-4588-ad6f-ca1a808773d2
 
-This smoke suite verifies key PRD-aligned behaviors (timing gates, narrative spaces, whisper-card word budgets, and horizon resistance constraints).
+## Verification
 
-## Autonomous PR conflict resolution agent
-
-This repository now includes a GitHub PR merge-conflict resolution helper:
-
-```bash
-python3 tools/pr_resolution_agent.py https://github.com/<owner>/<repo>/pull/<number>
-```
-
-What it does:
-- fetches the original PR metadata (base/head),
-- creates a resolution branch from the PR head,
-- merges base into head and resolves conflict markers with deterministic rules,
-- runs discoverable checks (unittest / pytest / npm test+lint / make test when present),
-- commits only resolution changes and opens a new PR back to the original base branch (via your fork when needed).
-
-Resolution policy is intentionally conservative:
-- preserve original PR intent by default,
-- prefer base branch behavior when conflicts touch contracts, security, permissions, or public API hints.
-
-## Experience enrichment approach (without clutter)
-
-To keep immersion high while avoiding UI noise, enhancements should follow three constraints:
-
-1. **Invisible intelligence over visible controls**  
-   Prefer systems that react to pace, stillness, and revisits (instead of adding toggles or panels).
-2. **Rare, non-looping atmospheric moments**  
-   Use occasional sensory events to preserve surprise and prevent mechanical repetition.
-3. **Narrative continuity through memory**  
-   Let later moments subtly acknowledge earlier zones so the journey feels authored, not segmented.
-
-Current implementation now reflects this by:
-
-- adapting HUD guidance based on scroll pace (encouraging slower movement when users rush),
-- introducing low-frequency ambient narrative moments that surface only after genuine exploration,
-- adding a soft sky-glow “swell” reaction tied to those moments for a richer sense of presence.
+See `verification/world-quality.md`. Run the browser suite after a build. It executes every place at 320px, 390px and 1440px, with normal and reduced motion, including a real drag, stable Reset, keyboard orbit, audio lifecycle and dialog checks. The workflow uploads screenshots and results. Glyph contrast capture scripts compare actual text cores with their exact rendered backdrop; they do not use median scene brightness.

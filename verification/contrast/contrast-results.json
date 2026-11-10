@@ -1,0 +1,770 @@
+[
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "h1",
+  "corePixels": 620,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "#scene-name",
+  "corePixels": 191,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "#view",
+  "corePixels": 197,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "#reset",
+  "corePixels": 43,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "#pause",
+  "corePixels": 28,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "#sound",
+  "corePixels": 50,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": "#about",
+  "corePixels": 27,
+  "worstContrast": 8.45,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 0,
+  "selector": ".hint",
+  "corePixels": 181,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "h1",
+  "corePixels": 620,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "#scene-name",
+  "corePixels": 156,
+  "worstContrast": 11.213,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "#view",
+  "corePixels": 164,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "#reset",
+  "corePixels": 43,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "#pause",
+  "corePixels": 28,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "#sound",
+  "corePixels": 50,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": "#about",
+  "corePixels": 27,
+  "worstContrast": 8.45,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 1,
+  "selector": ".hint",
+  "corePixels": 181,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "h1",
+  "corePixels": 620,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "#scene-name",
+  "corePixels": 179,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "#view",
+  "corePixels": 184,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "#reset",
+  "corePixels": 43,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "#pause",
+  "corePixels": 28,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "#sound",
+  "corePixels": 50,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": "#about",
+  "corePixels": 27,
+  "worstContrast": 8.45,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 2,
+  "selector": ".hint",
+  "corePixels": 181,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "h1",
+  "corePixels": 620,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "#scene-name",
+  "corePixels": 135,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "#view",
+  "corePixels": 138,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "#reset",
+  "corePixels": 43,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "#pause",
+  "corePixels": 28,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "#sound",
+  "corePixels": 50,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": "#about",
+  "corePixels": 27,
+  "worstContrast": 8.45,
+  "pass": true
+ },
+ {
+  "w": 1440,
+  "ch": 3,
+  "selector": ".hint",
+  "corePixels": 181,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "#scene-name",
+  "corePixels": 941,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "#view",
+  "corePixels": 1435,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "#reset",
+  "corePixels": 250,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "#pause",
+  "corePixels": 219,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "#sound",
+  "corePixels": 429,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": "#about",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 0,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "#scene-name",
+  "corePixels": 740,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "#view",
+  "corePixels": 1171,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "#reset",
+  "corePixels": 250,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "#pause",
+  "corePixels": 219,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "#sound",
+  "corePixels": 429,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": "#about",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 1,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "#scene-name",
+  "corePixels": 849,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "#view",
+  "corePixels": 1335,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "#reset",
+  "corePixels": 250,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "#pause",
+  "corePixels": 219,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "#sound",
+  "corePixels": 429,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": "#about",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 2,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "#scene-name",
+  "corePixels": 657,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "#view",
+  "corePixels": 1071,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "#reset",
+  "corePixels": 250,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "#pause",
+  "corePixels": 219,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "#sound",
+  "corePixels": 429,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": "#about",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 320,
+  "ch": 3,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "#scene-name",
+  "corePixels": 1362,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "#view",
+  "corePixels": 1435,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "#reset",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "#pause",
+  "corePixels": 203,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "#sound",
+  "corePixels": 412,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": "#about",
+  "corePixels": 284,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 0,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "#scene-name",
+  "corePixels": 1095,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "#view",
+  "corePixels": 1171,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "#reset",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "#pause",
+  "corePixels": 203,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "#sound",
+  "corePixels": 412,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": "#about",
+  "corePixels": 284,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 1,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "#scene-name",
+  "corePixels": 1261,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "#view",
+  "corePixels": 1335,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "#reset",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "#pause",
+  "corePixels": 203,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "#sound",
+  "corePixels": 412,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": "#about",
+  "corePixels": 284,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 2,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "h1",
+  "corePixels": 2123,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "#scene-name",
+  "corePixels": 998,
+  "worstContrast": 11.115,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "#view",
+  "corePixels": 1071,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "#reset",
+  "corePixels": 267,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "#pause",
+  "corePixels": 203,
+  "worstContrast": 8.372,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "#sound",
+  "corePixels": 412,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": "#about",
+  "corePixels": 284,
+  "worstContrast": 8.299,
+  "pass": true
+ },
+ {
+  "w": 390,
+  "ch": 3,
+  "selector": ".hint",
+  "corePixels": 1521,
+  "worstContrast": 11.115,
+  "pass": true
+ }
+]
