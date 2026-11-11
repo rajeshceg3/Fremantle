@@ -16,6 +16,7 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
+      - run: node verification/audio-structure.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
