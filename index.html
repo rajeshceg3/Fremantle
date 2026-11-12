@@ -21,24 +21,20 @@
       <h1>Fremantle</h1>
       <p id="scene-name">Fishing Boat Harbour</p>
     </header>
-    <nav aria-label="Places">
-      <label for="view" class="sr-only">Choose a place</label
-      ><select id="view">
-        <option value="0">Fishing Boat Harbour</option>
-        <option value="1">The Round House</option>
-        <option value="2">Fremantle Markets</option>
-        <option value="3">Bathers Beach</option>
-      </select>
+    <nav aria-label="Places" class="chrome chrome-on">
+      <div class="place-trail" role="radiogroup" aria-label="Choose a place"><button type="button" data-view="0" role="radio" aria-checked="true" aria-label="Fishing Boat Harbour" title="Fishing Boat Harbour" tabindex="0" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 15.5 L 20 15.3 L 17.5 19 L 7 19.2 Z M12 15.3 L 12 5 M12 6.5 C 14.5 7.5, 16 9.5, 16.4 12 M12 8.5 C 10 9, 8.6 10.5, 8.2 12.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-view="1" role="radio" aria-checked="false" aria-label="The Round House" title="The Round House" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 20 L 8.7 9 C 8.7 6.5, 10.2 5, 12 5.1 C 13.8 5.2, 15.3 6.6, 15.2 9.1 L 15 20 M6 20.2 L 18 20 M10.5 20 L 10.6 14.5 C 10.6 13.2, 11.8 12.6, 12.4 13.2 C 13 13.8, 13.2 14.4, 13.1 15.2 L 13 20 M10 9.5 L 14 9.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-view="2" role="radio" aria-checked="false" aria-label="Fremantle Markets" title="Fremantle Markets" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 10.5 L 6 5.5 L 18 5.3 L 19 10.3 M5 10.5 C 5 12, 6.2 12.8, 7.4 12.3 C 8.6 11.8, 8.7 10.6, 8.7 10.5 C 8.7 12, 9.9 12.9, 11.1 12.4 C 12.3 11.9, 12.4 10.6, 12.4 10.5 C 12.4 12, 13.6 12.8, 14.8 12.3 C 16 11.8, 16.1 10.6, 16.1 10.5 M6.5 20 L 6.7 13.5 L 17.3 13.4 L 17.5 20 M4.5 20.2 L 19.5 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-view="3" role="radio" aria-checked="false" aria-label="Bathers Beach" title="Bathers Beach" tabindex="-1" class="trail-token"><svg class="ink-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4.5 L 12 13 M5.5 9.5 C 7 6.5, 9.6 5, 12 5.1 C 14.4 5.2, 17 6.7, 18.3 9.6 C 15.5 8.3, 13.8 8.4, 12 9.3 C 10.2 8.4, 8.4 8.3, 5.5 9.5 Z M9 20 C 10 19, 11 19, 12 20 C 13 21, 14 21, 15 20 M6 16.5 C 7 15.5, 8 15.5, 9 16.5 M15.5 16.5 C 16.5 15.5, 17.5 15.5, 18.5 16.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
       <div class="tools">
         <button id="reset">Reset</button
         ><button id="pause" aria-pressed="false">Pause</button
         ><button id="sound" aria-pressed="false">Sound off</button
-        ><button id="about">About</button>
+        ><button id="about">About</button
+        ><button id="pin-controls" aria-pressed="false" title="Keep controls visible">Pin</button>
       </div>
       <p class="hint">Drag to explore. Find your own horizon.</p>
     </nav>
     <p id="scene-note" class="sr-only"></p>
     <p id="status" class="sr-only" role="status"></p>
+    <button class="chrome-hint" aria-label="Show controls" hidden><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 15.5 L 20 15.3 L 17.5 19 L 7 19.2 Z M12 15.3 L 12 5 M12 6.5 C 14.5 7.5, 16 9.5, 16.4 12 M12 8.5 C 10 9, 8.6 10.5, 8.2 12.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <dialog id="info">
       <h2>Working water. Living city.</h2>
       <p>

@@ -6,6 +6,9 @@ for (const width of [320, 390, 1440])
       page.on("pageerror", (e) => errors.push(e.message));
       await page.setViewportSize({ width, height: 844 });
       await page.emulateMedia({ reducedMotion: motion });
+      await page.addInitScript(() => {
+        try { localStorage.setItem("fremantle-chrome-pin", "1"); } catch {}
+      });
       await page.goto("/");
       await page.waitForFunction(() => window.__world);
       expect(await page.evaluate(() => window.__world.state.audio)).toBe(
@@ -15,7 +18,7 @@ for (const width of [320, 390, 1440])
         motion === "reduce",
       );
       for (let i = 0; i < 4; i++) {
-        await page.selectOption("#view", String(i));
+        await page.click(`[data-view="${i}"]`);
         await expect(page.locator("#scene-name")).toHaveText(
           [
             "Fishing Boat Harbour",
@@ -92,3 +95,20 @@ for (const width of [320, 390, 1440])
       ).toBe(true);
       expect(errors).toEqual([]);
     });
+
+const { test: qtest, expect: qexpect } = require("@playwright/test");
+qtest("quiet chrome retires and wakes", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.waitForFunction(() => window.__world);
+  await page.waitForTimeout(3400);
+  await qexpect(page.locator("nav.chrome")).toBeHidden();
+  await qexpect(page.locator(".chrome-hint")).toBeVisible();
+  await qexpect(page.locator("header")).toBeVisible();
+  await page.click(".chrome-hint");
+  await qexpect(page.locator("nav.chrome")).toBeVisible();
+  await qexpect(page.locator(".chrome-hint")).toBeHidden();
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(600);
+  await qexpect(page.locator("nav.chrome")).toBeHidden();
+});

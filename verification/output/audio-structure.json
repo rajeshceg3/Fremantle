@@ -1,0 +1,22 @@
+{
+  "checked": "2026-11-12T07:10:44.312Z",
+  "files": {
+    "fremantle-beach.wav": {
+      "rmsDb": -31.8,
+      "peak": 0.145
+    },
+    "fremantle-harbour.wav": {
+      "rmsDb": -33.6,
+      "peak": 0.103
+    },
+    "fremantle-markets.wav": {
+      "rmsDb": -33.3,
+      "peak": 0.089
+    },
+    "fremantle-roundhouse.wav": {
+      "rmsDb": -33.7,
+      "peak": 0.148
+    }
+  },
+  "note": "structural only: levels, clipping, DC, loop seams; not a judgement of how it sounds"
+}
