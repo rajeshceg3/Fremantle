@@ -168,3 +168,19 @@ nav {
   clip-path: inset(0);
   contain: paint;
 }
+
+/* Quiet chrome */
+.chrome{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}
+.chrome.chrome-on{opacity:1;visibility:visible;pointer-events:auto}
+.chrome-hint[hidden]{display:none}
+.chrome-hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:30;width:52px;height:40px;display:grid;place-items:center;background:#f7ead1;color:#172d33;border:2px solid #172d33;border-radius:14px 16px 13px 17px/16px 13px 17px 14px;box-shadow:3px 4px 0 rgba(16,23,35,.45);cursor:pointer;padding:6px}
+/* Place trail: rope-hitched harbour markers */
+.place-trail{display:flex;gap:7px;margin-bottom:10px;position:relative;padding:4px 2px}
+.place-trail::before{content:'';position:absolute;left:8px;right:8px;top:50%;border-top:2px dashed rgba(188,161,123,.55);pointer-events:none}
+.trail-token{position:relative;z-index:1;flex:1 1 0;display:grid;place-items:center;min-height:50px;padding:6px;background:#23434a;color:#f7ead1;border:2px solid #bca17b;border-radius:6px 14px 6px 14px/14px 6px 14px 6px;cursor:pointer;transition:transform .18s cubic-bezier(0.23,1,0.32,1),background-color .18s ease,color .18s ease}
+.trail-token .ink-icon{width:24px;height:24px}
+.trail-token:hover{transform:translateY(-2px)}
+.trail-token:active{transform:scale(.97)}
+.trail-token[aria-checked="true"]{background:#f7ead1;color:#172d33;transform:translateY(-3px) rotate(1.5deg)}
+.trail-token:focus-visible{outline:3px solid #bca17b;outline-offset:3px}
+@media (prefers-reduced-motion: reduce){.chrome,.trail-token{transition:none}}
